@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Download, Check, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
+import { useLanguage } from "@/app/context/language-context";
 
 interface DownloadButtonProps {
   cardRef: React.RefObject<HTMLDivElement | null>;
@@ -15,6 +16,7 @@ interface DownloadButtonProps {
  * Exports the trading card as a high-quality PNG
  */
 export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   const handleDownload = useCallback(async () => {
@@ -45,7 +47,7 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
         style: {
           transform: "none", // Reset any transforms for clean export
         },
-        filter: (node) => {
+        filter: () => {
           // Skip problematic elements if needed
           return true;
         },
@@ -75,28 +77,28 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
         return (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Generating...</span>
+            <span>{t.generating}</span>
           </>
         );
       case "success":
         return (
           <>
             <Check className="w-5 h-5" />
-            <span>Downloaded!</span>
+            <span>{t.downloaded}</span>
           </>
         );
       case "error":
         return (
           <>
             <Download className="w-5 h-5" />
-            <span>Try Again</span>
+            <span>{t.tryAgain}</span>
           </>
         );
       default:
         return (
           <>
             <Download className="w-5 h-5" />
-            <span>Download Card</span>
+            <span>{t.downloadCard}</span>
           </>
         );
     }
@@ -105,7 +107,7 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
   return (
     <motion.button
       className={`
-        btn-primary flex items-center gap-2 min-w-[180px] justify-center
+        btn-primary flex items-center gap-2 min-w-[160px] justify-center
         ${status === "success" ? "!bg-green-500 !shadow-[0_0_30px_rgba(34,197,94,0.4)]" : ""}
         ${status === "error" ? "!bg-red-500 !shadow-[0_0_30px_rgba(239,68,68,0.4)]" : ""}
       `}
@@ -121,4 +123,3 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
     </motion.button>
   );
 }
-

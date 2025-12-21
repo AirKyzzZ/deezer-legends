@@ -2,12 +2,14 @@
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { HeroSearch } from "@/app/components/hero-search";
 import { HoloCard } from "@/app/components/holo-card";
 import { DownloadButton } from "@/app/components/download-button";
+import { ShareButton } from "@/app/components/share-button";
 import { BackgroundEffects } from "@/app/components/background-effects";
 import { getLegendCardData } from "@/app/lib/deezer-api";
+import { useLanguage } from "@/app/context/language-context";
 import type { DeezerUser, LegendCardData } from "@/app/types/deezer";
 
 type AppState = "search" | "loading" | "card" | "error";
@@ -17,6 +19,7 @@ type AppState = "search" | "loading" | "card" | "error";
  * Orchestrates the flow: Search → Loading → Card Display
  */
 export default function Home() {
+  const { t } = useLanguage();
   const [state, setState] = useState<AppState>("search");
   const [cardData, setCardData] = useState<LegendCardData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +35,10 @@ export default function Home() {
       setState("card");
     } catch (err) {
       console.error("Failed to load user data:", err);
-      setError("Failed to generate card. Please try again.");
+      setError(t.errorMessage);
       setState("error");
     }
-  }, []);
+  }, [t.errorMessage]);
 
   const handleReset = useCallback(() => {
     setState("search");
@@ -90,7 +93,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                Generating Legend Card...
+                {t.generatingCard}
               </motion.p>
 
               <motion.p
@@ -99,7 +102,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
               >
-                Analyzing music stats and creating your card
+                {t.analyzingStats}
               </motion.p>
             </motion.div>
           )}
@@ -124,7 +127,7 @@ export default function Home() {
                 whileHover={{ x: -4 }}
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">New Search</span>
+                <span className="text-sm font-medium">{t.newSearch}</span>
               </motion.button>
 
               {/* Card */}
@@ -132,7 +135,7 @@ export default function Home() {
 
               {/* Actions */}
               <motion.div
-                className="mt-8 flex flex-col sm:flex-row items-center gap-4"
+                className="mt-8 flex flex-col sm:flex-row items-center gap-3"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -142,14 +145,22 @@ export default function Home() {
                   userName={cardData.user.name}
                 />
 
+                <ShareButton
+                  userName={cardData.user.name}
+                  cardRef={cardRef}
+                />
+
                 <motion.button
                   className="btn-secondary flex items-center gap-2"
                   onClick={handleReset}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>Search Another</span>
+                  <span>{t.searchAnother}</span>
                 </motion.button>
               </motion.div>
 
@@ -160,7 +171,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                Share your Legend Card on social media! 🎵
+                {t.shareOnSocial}
               </motion.p>
             </motion.div>
           )}
@@ -180,11 +191,11 @@ export default function Home() {
               </div>
 
               <h2 className="text-2xl font-bold text-white mb-2">
-                Oops! Something went wrong
+                {t.oops}
               </h2>
 
               <p className="text-text-secondary mb-6 max-w-md">
-                {error || "We couldn't generate the Legend Card. Please try again."}
+                {error || t.errorMessage}
               </p>
 
               <motion.button
@@ -194,7 +205,7 @@ export default function Home() {
                 whileTap={{ scale: 0.98 }}
               >
                 <RefreshCw className="w-4 h-4" />
-                <span>Try Again</span>
+                <span>{t.tryAgain}</span>
               </motion.button>
             </motion.div>
           )}
@@ -209,7 +220,7 @@ export default function Home() {
         transition={{ delay: 1 }}
       >
         <p className="text-xs text-text-muted">
-          Made with 💜 by Maxime Mansiet • Not affiliated with Deezer
+          {t.madeWith} • {t.notAffiliated}
         </p>
       </motion.footer>
     </main>

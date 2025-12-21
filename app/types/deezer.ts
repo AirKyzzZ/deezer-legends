@@ -1,6 +1,5 @@
 /**
  * Deezer API Type Definitions
- * Based on the Deezer Public API documentation
  */
 
 export interface DeezerUser {
@@ -112,33 +111,35 @@ export interface DeezerTracksResponse {
 }
 
 // ============================================
-// TCG Card Types
+// TCG Card Types - Using real genre names
 // ============================================
 
-export type ElementType =
-  | "Fairy"
-  | "Steel"
-  | "Fire"
-  | "Electric"
-  | "Psychic"
-  | "Dark"
-  | "Water"
-  | "Earth"
-  | "Normal";
+export type GenreType =
+  | "Pop"
+  | "Rock"
+  | "Rap"
+  | "Hip-Hop"
+  | "Electronic"
+  | "Jazz"
+  | "Classical"
+  | "Metal"
+  | "R&B"
+  | "Indie"
+  | "Mixed";
 
 export interface ElementData {
-  element: ElementType;
+  genre: GenreType;
   icon: string; // Lucide icon name
   color: string;
-  weakness: ElementType;
-  resistance: ElementType;
+  weakness: GenreType;
+  resistance: GenreType;
 }
 
 export interface Attack {
-  name: string;
+  name: string; // Artist name
   damage: number;
   energyCost: number;
-  description?: string;
+  description?: string; // Track name
 }
 
 export interface TCGCardData {
@@ -148,7 +149,7 @@ export interface TCGCardData {
   attacks: Attack[];
   retreatCost: number;
   rarity: string;
-  flavorText: string;
+  genre: string;
 }
 
 // Legacy types (kept for backward compatibility)

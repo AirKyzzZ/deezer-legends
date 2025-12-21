@@ -4,19 +4,19 @@ import { useRef, useState, useCallback, forwardRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Sparkles,
-  Shield,
-  Flame,
+  Guitar,
+  Mic,
   Zap,
-  Eye,
-  Moon,
-  Droplets,
-  Mountain,
+  Piano,
   Music,
+  Skull,
   Heart,
+  Leaf,
   Disc3,
 } from "lucide-react";
 import Image from "next/image";
-import type { LegendCardData, ElementType, Attack } from "@/app/types/deezer";
+import type { LegendCardData, GenreType, Attack } from "@/app/types/deezer";
+import { useLanguage } from "@/app/context/language-context";
 
 /**
  * Proxy an image URL through our API to avoid CORS issues
@@ -67,57 +67,61 @@ function useTilt() {
 }
 
 /**
- * Get element icon component
+ * Get genre icon component
  */
-function getElementIcon(iconName: string, className: string = "w-5 h-5") {
+function getGenreIcon(iconName: string, className: string = "w-5 h-5") {
   const icons: Record<string, React.ReactNode> = {
     Sparkles: <Sparkles className={className} />,
-    Shield: <Shield className={className} />,
-    Flame: <Flame className={className} />,
+    Guitar: <Guitar className={className} />,
+    Mic: <Mic className={className} />,
     Zap: <Zap className={className} />,
-    Eye: <Eye className={className} />,
-    Moon: <Moon className={className} />,
-    Droplets: <Droplets className={className} />,
-    Mountain: <Mountain className={className} />,
+    Piano: <Piano className={className} />,
     Music: <Music className={className} />,
+    Skull: <Skull className={className} />,
+    Heart: <Heart className={className} />,
+    Leaf: <Leaf className={className} />,
   };
   return icons[iconName] || <Music className={className} />;
 }
 
 /**
- * Get element background gradient
+ * Get genre background gradient
  */
-function getElementGradient(element: ElementType): string {
-  const gradients: Record<ElementType, string> = {
-    Fairy: "from-pink-500/20 via-purple-500/10 to-pink-400/20",
-    Steel: "from-slate-400/20 via-gray-500/10 to-slate-300/20",
-    Fire: "from-orange-500/20 via-red-500/10 to-amber-400/20",
-    Electric: "from-yellow-400/20 via-amber-500/10 to-yellow-300/20",
-    Psychic: "from-purple-500/20 via-violet-500/10 to-fuchsia-400/20",
-    Dark: "from-slate-800/30 via-gray-900/20 to-slate-700/30",
-    Water: "from-blue-500/20 via-cyan-500/10 to-blue-400/20",
-    Earth: "from-amber-700/20 via-orange-800/10 to-amber-600/20",
-    Normal: "from-gray-400/20 via-slate-500/10 to-gray-300/20",
+function getGenreGradient(genre: GenreType): string {
+  const gradients: Record<GenreType, string> = {
+    Pop: "from-pink-500/20 via-purple-500/10 to-pink-400/20",
+    Rock: "from-red-500/20 via-orange-500/10 to-red-400/20",
+    Rap: "from-orange-500/20 via-red-500/10 to-amber-400/20",
+    "Hip-Hop": "from-orange-500/20 via-red-500/10 to-amber-400/20",
+    Electronic: "from-cyan-400/20 via-blue-500/10 to-cyan-300/20",
+    Jazz: "from-purple-500/20 via-violet-500/10 to-fuchsia-400/20",
+    Classical: "from-amber-400/20 via-yellow-500/10 to-amber-300/20",
+    Metal: "from-slate-600/30 via-gray-800/20 to-slate-500/30",
+    "R&B": "from-pink-500/20 via-rose-500/10 to-pink-400/20",
+    Indie: "from-green-500/20 via-emerald-500/10 to-green-400/20",
+    Mixed: "from-purple-500/20 via-violet-500/10 to-purple-400/20",
   };
-  return gradients[element] || gradients.Normal;
+  return gradients[genre] || gradients.Mixed;
 }
 
 /**
- * Get element border color
+ * Get genre border color
  */
-function getElementBorderColor(element: ElementType): string {
-  const colors: Record<ElementType, string> = {
-    Fairy: "border-pink-400/50",
-    Steel: "border-slate-400/50",
-    Fire: "border-orange-500/50",
-    Electric: "border-yellow-400/50",
-    Psychic: "border-purple-500/50",
-    Dark: "border-slate-600/50",
-    Water: "border-blue-400/50",
-    Earth: "border-amber-600/50",
-    Normal: "border-gray-400/50",
+function getGenreBorderColor(genre: GenreType): string {
+  const colors: Record<GenreType, string> = {
+    Pop: "border-pink-400/50",
+    Rock: "border-red-500/50",
+    Rap: "border-orange-500/50",
+    "Hip-Hop": "border-orange-500/50",
+    Electronic: "border-cyan-400/50",
+    Jazz: "border-purple-500/50",
+    Classical: "border-amber-400/50",
+    Metal: "border-slate-500/50",
+    "R&B": "border-pink-500/50",
+    Indie: "border-green-500/50",
+    Mixed: "border-purple-500/50",
   };
-  return colors[element] || colors.Normal;
+  return colors[genre] || colors.Mixed;
 }
 
 /**
@@ -150,22 +154,42 @@ function getRarityStyles(rarity: string): { bg: string; text: string } {
 }
 
 /**
- * HoloCard Component - Pokemon/TCG Style
+ * HoloCard Component - Pokemon/TCG Style with real genre names
  */
 export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
   function HoloCard({ data }, ref) {
     const cardRef = useRef<HTMLDivElement>(null);
     const { transform, handleMouseMove, handleMouseLeave } = useTilt();
     const { user, tcg } = data;
+    const { t, language } = useLanguage();
 
     const proxiedImageUrl = useMemo(
       () => getProxiedImageUrl(user.picture_xl || user.picture_big),
       [user.picture_xl, user.picture_big]
     );
 
-    const elementGradient = getElementGradient(tcg.element.element);
-    const elementBorder = getElementBorderColor(tcg.element.element);
+    const genreGradient = getGenreGradient(tcg.element.genre);
+    const genreBorder = getGenreBorderColor(tcg.element.genre);
     const rarityStyles = getRarityStyles(tcg.rarity);
+
+    // Get localized rarity
+    const localizedRarity = useMemo(() => {
+      const rarityMap: Record<string, keyof typeof t> = {
+        LEGENDARY: "legendary",
+        "ULTRA RARE": "ultraRare",
+        RARE: "rare",
+        UNCOMMON: "uncommon",
+        COMMON: "common",
+      };
+      const key = rarityMap[tcg.rarity];
+      return key ? (t[key] as string) : tcg.rarity;
+    }, [tcg.rarity, t]);
+
+    // Get localized flavor text
+    const flavorText = useMemo(() => {
+      const texts = t.flavorTexts as Record<string, string>;
+      return texts[tcg.genre] || texts.default;
+    }, [tcg.genre, t.flavorTexts]);
 
     return (
       <motion.div
@@ -187,7 +211,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
         >
           {/* Card Container with 3D Transform */}
           <div
-            className={`relative w-full h-full rounded-[1.5rem] overflow-hidden transition-transform duration-200 ease-out border-4 ${elementBorder}`}
+            className={`relative w-full h-full rounded-[1.5rem] overflow-hidden transition-transform duration-200 ease-out border-4 ${genreBorder}`}
             style={{
               transform: `rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg)`,
               transformStyle: "preserve-3d",
@@ -198,8 +222,8 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
               `,
             }}
           >
-            {/* Card Background with Element Gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${elementGradient}`} />
+            {/* Card Background with Genre Gradient */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${genreGradient}`} />
             <div className="absolute inset-0 bg-[#0a0a12]/90" />
 
             {/* Holographic Overlay */}
@@ -211,7 +235,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                     ${45 + transform.rotateY * 3}deg,
                     transparent 0%,
                     rgba(255, 255, 255, 0.1) 25%,
-                    rgba(${tcg.element.color}, 0.3) 50%,
+                    ${tcg.element.color}40 50%,
                     rgba(255, 255, 255, 0.1) 75%,
                     transparent 100%
                   )
@@ -245,13 +269,13 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                   </h2>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-xs text-white/60">HP</span>
+                  <span className="text-xs text-white/60">{t.hp}</span>
                   <span className="text-2xl font-black text-white">{tcg.hp}</span>
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center ml-1"
                     style={{ backgroundColor: tcg.element.color }}
                   >
-                    {getElementIcon(tcg.element.icon, "w-4 h-4 text-white")}
+                    {getGenreIcon(tcg.element.icon, "w-4 h-4 text-white")}
                   </div>
                 </div>
               </div>
@@ -273,30 +297,30 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                     crossOrigin="anonymous"
                   />
 
-                  {/* Element Type Badge */}
+                  {/* Genre Type Badge */}
                   <div
                     className="absolute bottom-2 right-2 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold"
-                    style={{ backgroundColor: `${tcg.element.color}`, color: "#fff" }}
+                    style={{ backgroundColor: tcg.element.color, color: "#fff" }}
                   >
-                    {getElementIcon(tcg.element.icon, "w-3 h-3")}
-                    <span>{tcg.element.element}</span>
+                    {getGenreIcon(tcg.element.icon, "w-3 h-3")}
+                    <span>{tcg.element.genre}</span>
                   </div>
 
                   {/* Rarity Badge */}
                   <div
                     className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${rarityStyles.bg} ${rarityStyles.text}`}
                   >
-                    {tcg.rarity}
+                    {localizedRarity}
                   </div>
                 </div>
 
                 {/* Flavor Text below image */}
                 <p className="text-[10px] text-white/50 italic mt-1 text-center px-2 line-clamp-1">
-                  {tcg.flavorText}
+                  {flavorText}
                 </p>
               </div>
 
-              {/* === ATTACKS LIST === */}
+              {/* === ATTACKS LIST (Top Artists) === */}
               <div className="flex-1 flex flex-col gap-2">
                 {tcg.attacks.map((attack, index) => (
                   <AttackRow
@@ -313,21 +337,21 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                 <div className="flex items-center justify-between text-[10px]">
                   {/* Weakness */}
                   <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">Weakness</span>
-                    <WeaknessIcon type={tcg.element.weakness} />
+                    <span className="text-white/40 uppercase tracking-wide">{t.weakness}</span>
+                    <GenreBadge genre={tcg.element.weakness} />
                     <span className="text-red-400 font-bold">×2</span>
                   </div>
 
                   {/* Resistance */}
                   <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">Resistance</span>
-                    <WeaknessIcon type={tcg.element.resistance} />
+                    <span className="text-white/40 uppercase tracking-wide">{t.resistance}</span>
+                    <GenreBadge genre={tcg.element.resistance} />
                     <span className="text-green-400 font-bold">-20</span>
                   </div>
 
                   {/* Retreat Cost */}
                   <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">Retreat</span>
+                    <span className="text-white/40 uppercase tracking-wide">{t.retreat}</span>
                     <div className="flex gap-0.5">
                       {Array.from({ length: tcg.retreatCost }).map((_, i) => (
                         <div
@@ -344,7 +368,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
 
               {/* Card Number / Set Info */}
               <div className="mt-2 flex items-center justify-between text-[8px] text-white/30">
-                <span>DEEZER LEGENDS • {user.country || "INTL"}</span>
+                <span>{t.deezerLegends} • {user.country || "INTL"}</span>
                 <span>#{user.id.toString().slice(-4)}/9999</span>
               </div>
             </div>
@@ -372,7 +396,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
 );
 
 /**
- * Attack Row Component
+ * Attack Row Component (Now shows Artist names)
  */
 function AttackRow({
   attack,
@@ -393,12 +417,12 @@ function AttackRow({
             className="w-5 h-5 rounded-full flex items-center justify-center"
             style={{ backgroundColor: elementColor }}
           >
-            {getElementIcon(elementIcon, "w-3 h-3 text-white")}
+            {getGenreIcon(elementIcon, "w-3 h-3 text-white")}
           </div>
         ))}
       </div>
 
-      {/* Attack Name & Description */}
+      {/* Artist Name & Track */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-white truncate">{attack.name}</p>
         {attack.description && (
@@ -415,29 +439,47 @@ function AttackRow({
 }
 
 /**
- * Weakness/Resistance Icon Component
+ * Genre Badge Component
  */
-function WeaknessIcon({ type }: { type: ElementType }) {
-  const iconMap: Record<ElementType, { icon: string; color: string }> = {
-    Fairy: { icon: "Sparkles", color: "#ff69b4" },
-    Steel: { icon: "Shield", color: "#b8b8d0" },
-    Fire: { icon: "Flame", color: "#ff6b35" },
-    Electric: { icon: "Zap", color: "#ffd700" },
-    Psychic: { icon: "Eye", color: "#9b59b6" },
-    Dark: { icon: "Moon", color: "#2c3e50" },
-    Water: { icon: "Droplets", color: "#3498db" },
-    Earth: { icon: "Mountain", color: "#8b4513" },
-    Normal: { icon: "Music", color: "#a0a0a0" },
+function GenreBadge({ genre }: { genre: GenreType }) {
+  const genreColors: Record<GenreType, string> = {
+    Pop: "#ff69b4",
+    Rock: "#e74c3c",
+    Rap: "#ff6b35",
+    "Hip-Hop": "#ff6b35",
+    Electronic: "#00d4ff",
+    Jazz: "#9b59b6",
+    Classical: "#c9a227",
+    Metal: "#2c3e50",
+    "R&B": "#e91e63",
+    Indie: "#27ae60",
+    Mixed: "#a236ff",
   };
 
-  const { icon, color } = iconMap[type] || iconMap.Normal;
+  const genreIcons: Record<GenreType, string> = {
+    Pop: "Sparkles",
+    Rock: "Guitar",
+    Rap: "Mic",
+    "Hip-Hop": "Mic",
+    Electronic: "Zap",
+    Jazz: "Piano",
+    Classical: "Music",
+    Metal: "Skull",
+    "R&B": "Heart",
+    Indie: "Leaf",
+    Mixed: "Music",
+  };
+
+  const color = genreColors[genre] || genreColors.Mixed;
+  const icon = genreIcons[genre] || "Music";
 
   return (
     <div
       className="w-5 h-5 rounded-full flex items-center justify-center"
       style={{ backgroundColor: color }}
+      title={genre}
     >
-      {getElementIcon(icon, "w-3 h-3 text-white")}
+      {getGenreIcon(icon, "w-3 h-3 text-white")}
     </div>
   );
 }

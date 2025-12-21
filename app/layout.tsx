@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { deezerFont } from "./fonts";
 import "./globals.css";
+import { Providers } from "./components/providers";
 
 export const metadata: Metadata = {
   title: "Deezer Legends - Generate Your Music Trading Card",
@@ -46,7 +47,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${deezerFont.variable} antialiased`}>{children}</body>
+      <body className={`${deezerFont.variable} antialiased`}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -1,6 +1,5 @@
 /**
  * Deezer API Client
- * Fetches data through Next.js API routes to avoid CORS issues
  */
 
 import type {
@@ -9,99 +8,100 @@ import type {
   DeezerSearchResponse,
   DeezerPlaylistsResponse,
   DeezerTracksResponse,
+  DeezerTrack,
   UserStats,
   LegendCardData,
   TCGCardData,
   ElementData,
-  ElementType,
+  GenreType,
   Attack,
 } from "@/app/types/deezer";
 
 const API_BASE = "/api/deezer";
 
 // ============================================
-// GENRE TO ELEMENT MAPPING (RPG Logic)
+// GENRE DATA - Using real genre names as types
 // ============================================
 
-const ELEMENT_DATA: Record<string, ElementData> = {
+const GENRE_DATA: Record<string, ElementData> = {
   Pop: {
-    element: "Fairy",
+    genre: "Pop",
     icon: "Sparkles",
     color: "#ff69b4",
-    weakness: "Steel",
-    resistance: "Dark",
+    weakness: "Metal",
+    resistance: "Rap",
   },
   Rock: {
-    element: "Steel",
-    icon: "Shield",
-    color: "#b8b8d0",
-    weakness: "Fire",
-    resistance: "Fairy",
+    genre: "Rock",
+    icon: "Guitar",
+    color: "#e74c3c",
+    weakness: "Electronic",
+    resistance: "Pop",
   },
-  "Rap": {
-    element: "Fire",
-    icon: "Flame",
+  Rap: {
+    genre: "Rap",
+    icon: "Mic",
     color: "#ff6b35",
-    weakness: "Water",
-    resistance: "Steel",
+    weakness: "Rock",
+    resistance: "Electronic",
   },
   "Hip-Hop": {
-    element: "Fire",
-    icon: "Flame",
+    genre: "Hip-Hop",
+    icon: "Mic",
     color: "#ff6b35",
-    weakness: "Water",
-    resistance: "Steel",
+    weakness: "Rock",
+    resistance: "Electronic",
   },
   Electronic: {
-    element: "Electric",
+    genre: "Electronic",
     icon: "Zap",
-    color: "#ffd700",
-    weakness: "Earth",
-    resistance: "Steel",
+    color: "#00d4ff",
+    weakness: "Jazz",
+    resistance: "Rock",
   },
   Jazz: {
-    element: "Psychic",
-    icon: "Eye",
+    genre: "Jazz",
+    icon: "Piano",
     color: "#9b59b6",
-    weakness: "Dark",
-    resistance: "Fire",
+    weakness: "Metal",
+    resistance: "Electronic",
   },
   Classical: {
-    element: "Psychic",
-    icon: "Eye",
-    color: "#9b59b6",
-    weakness: "Dark",
-    resistance: "Fire",
+    genre: "Classical",
+    icon: "Music",
+    color: "#c9a227",
+    weakness: "Rap",
+    resistance: "Jazz",
   },
   Metal: {
-    element: "Dark",
-    icon: "Moon",
+    genre: "Metal",
+    icon: "Skull",
     color: "#2c3e50",
-    weakness: "Fairy",
-    resistance: "Psychic",
+    weakness: "Classical",
+    resistance: "Rock",
   },
   "R&B": {
-    element: "Water",
-    icon: "Droplets",
-    color: "#3498db",
-    weakness: "Electric",
-    resistance: "Fire",
+    genre: "R&B",
+    icon: "Heart",
+    color: "#e91e63",
+    weakness: "Electronic",
+    resistance: "Pop",
   },
   Indie: {
-    element: "Earth",
-    icon: "Mountain",
-    color: "#8b4513",
-    weakness: "Water",
-    resistance: "Electric",
+    genre: "Indie",
+    icon: "Leaf",
+    color: "#27ae60",
+    weakness: "Pop",
+    resistance: "Metal",
   },
 };
 
-const DEFAULT_ELEMENT: ElementData = {
-  element: "Normal",
+const DEFAULT_GENRE: ElementData = {
+  genre: "Mixed",
   icon: "Music",
-  color: "#a0a0a0",
-  weakness: "Steel",
-  resistance: "Normal",
+  color: "#a236ff",
+  weakness: "Mixed",
+  resistance: "Mixed",
 };
 
 // Genre-based fallback attacks when no tracks are available
@@ -222,48 +222,84 @@ export async function getPlaylistTracks(
 }
 
 /**
- * Get element data based on genre
+ * Get genre data based on genre name
  */
-function getElementFromGenre(genre: string): ElementData {
-  return ELEMENT_DATA[genre] || DEFAULT_ELEMENT;
+function getGenreData(genre: string): ElementData {
+  return GENRE_DATA[genre] || DEFAULT_GENRE;
 }
 
 /**
- * Generate attacks from tracks or fallback to genre-based attacks
+ * Extract top 2 artists from tracks
+ */
+function extractTopArtists(tracks: DeezerTrack[]): Attack[] {
+  // Count artist occurrences and get their best track
+  const artistMap = new Map<string, { count: number; track: DeezerTrack }>();
+
+  for (const track of tracks) {
+    const artistName = track.artist?.name;
+    if (!artistName) continue;
+
+    const existing = artistMap.get(artistName);
+    if (existing) {
+      existing.count++;
+      // Keep the higher-ranked track
+      if ((track.rank || 0) > (existing.track.rank || 0)) {
+        existing.track = track;
+      }
+    } else {
+      artistMap.set(artistName, { count: 1, track });
+    }
+  }
+
+  // Sort by count (most listened artists first)
+  const sortedArtists = Array.from(artistMap.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 2);
+
+  // Convert to attacks
+  return sortedArtists.map(([artistName, data], index) => {
+    const baseDamage = Math.floor((data.track.rank || 500000) / 10000);
+    const damage = Math.min(120, Math.max(30, baseDamage + data.count * 5 + (index === 0 ? 10 : 0)));
+
+    return {
+      name: artistName,
+      damage,
+      energyCost: index === 0 ? 2 : 3,
+      description: data.track.title_short || data.track.title,
+    };
+  });
+}
+
+/**
+ * Generate attacks from user's top artists
  */
 async function generateAttacks(
   playlists: DeezerPlaylistsResponse,
   genre: string
 ): Promise<Attack[]> {
   const playlistData = playlists.data || [];
-  
-  // Find a public playlist with tracks
-  const publicPlaylist = playlistData.find(
-    (p) => p.public && p.nb_tracks > 0 && !p.is_loved_track
-  );
+  const allTracks: DeezerTrack[] = [];
 
-  if (publicPlaylist) {
+  // Collect tracks from multiple playlists to get better artist data
+  const publicPlaylists = playlistData
+    .filter((p) => p.public && p.nb_tracks > 0 && !p.is_loved_track)
+    .slice(0, 3); // Check up to 3 playlists
+
+  for (const playlist of publicPlaylists) {
     try {
-      const tracksResponse = await getPlaylistTracks(publicPlaylist.id);
-      const tracks = tracksResponse.data || [];
-
-      if (tracks.length >= 2) {
-        // Convert top 2 tracks to attacks
-        return tracks.slice(0, 2).map((track, index) => {
-          // Calculate damage based on track rank (0-1000000)
-          const baseDamage = Math.floor((track.rank || 500000) / 10000);
-          const damage = Math.min(120, Math.max(20, baseDamage + (index === 0 ? 20 : 40)));
-          
-          return {
-            name: track.title_short || track.title,
-            damage,
-            energyCost: index === 0 ? 2 : 3,
-            description: `by ${track.artist?.name || "Unknown Artist"}`,
-          };
-        });
+      const tracksResponse = await getPlaylistTracks(playlist.id);
+      if (tracksResponse.data) {
+        allTracks.push(...tracksResponse.data);
       }
     } catch (error) {
-      console.error("Failed to fetch tracks, using fallback attacks:", error);
+      console.error("Failed to fetch tracks from playlist:", error);
+    }
+  }
+
+  if (allTracks.length >= 2) {
+    const topArtists = extractTopArtists(allTracks);
+    if (topArtists.length >= 2) {
+      return topArtists;
     }
   }
 
@@ -279,7 +315,7 @@ function calculateHP(user: DeezerUserFull, totalTracks: number): number {
   const fanBonus = Math.min(60, (user.nb_fan || 0) * 2);
   const playlistBonus = Math.min(40, (user.nb_playlist || 0) * 5);
   const trackBonus = Math.min(40, Math.floor(totalTracks / 10));
-  
+
   return Math.min(250, baseHP + fanBonus + playlistBonus + trackBonus);
 }
 
@@ -305,26 +341,6 @@ function determineRarity(hp: number, totalTracks: number): string {
 }
 
 /**
- * Generate flavor text based on genre and stats
- */
-function generateFlavorText(genre: string, user: DeezerUserFull): string {
-  const flavorTexts: Record<string, string> = {
-    Pop: `A rising star from ${user.country || "the music world"}, known for catchy melodies.`,
-    Rock: `A legendary force wielding the power of distorted guitars.`,
-    "Hip-Hop": `Spitting bars with unmatched flow and rhythm.`,
-    Rap: `Commanding the mic with lyrical precision.`,
-    Electronic: `Channeling pure energy through synthesized beats.`,
-    Jazz: `A master of improvisation and soulful expression.`,
-    Classical: `Conducting symphonies of unparalleled beauty.`,
-    Metal: `Unleashing chaos with crushing riffs and thunderous drums.`,
-    "R&B": `Smooth vocals that move hearts and souls.`,
-    Indie: `An authentic voice from the underground scene.`,
-  };
-
-  return flavorTexts[genre] || `A unique talent from ${user.country || "around the world"}.`;
-}
-
-/**
  * Calculate user stats from their data (legacy support)
  */
 function calculateStats(
@@ -337,14 +353,11 @@ function calculateStats(
 
   const userPlaylists = user.nb_playlist || 0;
   const userFans = user.nb_fan || 0;
-  
+
   const powerLevel = Math.min(
     9999,
     Math.floor(
-      userPlaylists * 10 +
-        userFans * 5 +
-        totalTracks * 2 +
-        totalFans * 3
+      userPlaylists * 10 + userFans * 5 + totalTracks * 2 + totalFans * 3
     )
   );
 
@@ -361,7 +374,7 @@ function calculateStats(
     legendRank = "COMMON";
   }
 
-  const genres = Object.keys(ELEMENT_DATA);
+  const genres = Object.keys(GENRE_DATA);
   const topGenre = genres[Math.floor(Math.random() * genres.length)];
 
   return {
@@ -383,12 +396,11 @@ async function buildTCGCardData(
   genre: string,
   totalTracks: number
 ): Promise<TCGCardData> {
-  const element = getElementFromGenre(genre);
+  const element = getGenreData(genre);
   const attacks = await generateAttacks(playlists, genre);
   const hp = calculateHP(user, totalTracks);
   const retreatCost = calculateRetreatCost(user.nb_playlist || 0);
   const rarity = determineRarity(hp, totalTracks);
-  const flavorText = generateFlavorText(genre, user);
 
   return {
     user,
@@ -397,28 +409,31 @@ async function buildTCGCardData(
     attacks,
     retreatCost,
     rarity,
-    flavorText,
+    genre,
   };
 }
 
 /**
  * Fetch complete legend card data for a user
  */
-export async function getLegendCardData(
-  userId: number
-): Promise<LegendCardData> {
+export async function getLegendCardData(userId: number): Promise<LegendCardData> {
   const [user, playlists] = await Promise.all([
     getUser(userId),
     getUserPlaylists(userId),
   ]);
 
   const stats = calculateStats(user, playlists);
-  const tcg = await buildTCGCardData(user, playlists, stats.topGenre, stats.totalTracks);
+  const tcg = await buildTCGCardData(
+    user,
+    playlists,
+    stats.topGenre,
+    stats.totalTracks
+  );
 
   return { user, stats, tcg };
 }
 
 /**
- * Export element data for use in components
+ * Export genre data for use in components
  */
-export { ELEMENT_DATA, DEFAULT_ELEMENT };
+export { GENRE_DATA, DEFAULT_GENRE };
