@@ -75,6 +75,15 @@
 
 html {
   scroll-behavior: smooth;
+  /* Scale up UI for better visibility on desktop */
+  font-size: 110%;
+}
+
+@media (max-width: 768px) {
+  html {
+    /* Keep mobile size standard to prevent overflow/cramping */
+    font-size: 100%;
+  }
 }
 
 body {
