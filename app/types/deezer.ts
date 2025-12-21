@@ -23,6 +23,43 @@ export interface DeezerUserFull extends DeezerUser {
   nb_playlist: number;
 }
 
+export interface DeezerTrack {
+  id: number;
+  readable: boolean;
+  title: string;
+  title_short: string;
+  title_version: string;
+  link: string;
+  duration: number;
+  rank: number;
+  explicit_lyrics: boolean;
+  explicit_content_lyrics: number;
+  explicit_content_cover: number;
+  preview: string;
+  md5_image: string;
+  time_add: number;
+  artist: {
+    id: number;
+    name: string;
+    link: string;
+    tracklist: string;
+    type: string;
+  };
+  album: {
+    id: number;
+    title: string;
+    cover: string;
+    cover_small: string;
+    cover_medium: string;
+    cover_big: string;
+    cover_xl: string;
+    md5_image: string;
+    tracklist: string;
+    type: string;
+  };
+  type: "track";
+}
+
 export interface DeezerPlaylist {
   id: number;
   title: string;
@@ -67,6 +104,54 @@ export interface DeezerPlaylistsResponse {
   next?: string;
 }
 
+export interface DeezerTracksResponse {
+  data: DeezerTrack[];
+  checksum?: string;
+  total: number;
+  next?: string;
+}
+
+// ============================================
+// TCG Card Types
+// ============================================
+
+export type ElementType =
+  | "Fairy"
+  | "Steel"
+  | "Fire"
+  | "Electric"
+  | "Psychic"
+  | "Dark"
+  | "Water"
+  | "Earth"
+  | "Normal";
+
+export interface ElementData {
+  element: ElementType;
+  icon: string; // Lucide icon name
+  color: string;
+  weakness: ElementType;
+  resistance: ElementType;
+}
+
+export interface Attack {
+  name: string;
+  damage: number;
+  energyCost: number;
+  description?: string;
+}
+
+export interface TCGCardData {
+  user: DeezerUserFull;
+  hp: number;
+  element: ElementData;
+  attacks: Attack[];
+  retreatCost: number;
+  rarity: string;
+  flavorText: string;
+}
+
+// Legacy types (kept for backward compatibility)
 export interface UserStats {
   totalPlaylists: number;
   totalFans: number;
@@ -79,5 +164,5 @@ export interface UserStats {
 export interface LegendCardData {
   user: DeezerUserFull;
   stats: UserStats;
+  tcg: TCGCardData;
 }
-

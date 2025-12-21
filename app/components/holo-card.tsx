@@ -2,9 +2,21 @@
 
 import { useRef, useState, useCallback, forwardRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Music, Users, ListMusic, Disc3, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Shield,
+  Flame,
+  Zap,
+  Eye,
+  Moon,
+  Droplets,
+  Mountain,
+  Music,
+  Heart,
+  Disc3,
+} from "lucide-react";
 import Image from "next/image";
-import type { LegendCardData } from "@/app/types/deezer";
+import type { LegendCardData, ElementType, Attack } from "@/app/types/deezer";
 
 /**
  * Proxy an image URL through our API to avoid CORS issues
@@ -20,7 +32,6 @@ interface HoloCardProps {
 
 /**
  * Custom hook for 3D tilt effect
- * Implements the tilt functionality without external dependencies
  */
 function useTilt() {
   const [transform, setTransform] = useState({
@@ -38,11 +49,8 @@ function useTilt() {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      // Calculate rotation (max 15 degrees)
-      const rotateX = ((y - centerY) / centerY) * -15;
-      const rotateY = ((x - centerX) / centerX) * 15;
-
-      // Calculate shine position (0-100%)
+      const rotateX = ((y - centerY) / centerY) * -12;
+      const rotateY = ((x - centerX) / centerX) * 12;
       const shineX = (x / rect.width) * 100;
       const shineY = (y / rect.height) * 100;
 
@@ -59,44 +67,105 @@ function useTilt() {
 }
 
 /**
- * Get rank class based on legend rank
+ * Get element icon component
  */
-function getRankClass(rank: string): string {
-  const rankMap: Record<string, string> = {
-    MYTHIC: "rank-mythic",
-    LEGENDARY: "rank-legendary",
-    EPIC: "rank-epic",
-    RARE: "rank-rare",
-    COMMON: "rank-common",
+function getElementIcon(iconName: string, className: string = "w-5 h-5") {
+  const icons: Record<string, React.ReactNode> = {
+    Sparkles: <Sparkles className={className} />,
+    Shield: <Shield className={className} />,
+    Flame: <Flame className={className} />,
+    Zap: <Zap className={className} />,
+    Eye: <Eye className={className} />,
+    Moon: <Moon className={className} />,
+    Droplets: <Droplets className={className} />,
+    Mountain: <Mountain className={className} />,
+    Music: <Music className={className} />,
   };
-  return rankMap[rank] || "rank-common";
+  return icons[iconName] || <Music className={className} />;
 }
 
 /**
- * Format large numbers
+ * Get element background gradient
  */
-function formatNumber(num: number | undefined | null): string {
-  if (num === undefined || num === null) return "0";
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
+function getElementGradient(element: ElementType): string {
+  const gradients: Record<ElementType, string> = {
+    Fairy: "from-pink-500/20 via-purple-500/10 to-pink-400/20",
+    Steel: "from-slate-400/20 via-gray-500/10 to-slate-300/20",
+    Fire: "from-orange-500/20 via-red-500/10 to-amber-400/20",
+    Electric: "from-yellow-400/20 via-amber-500/10 to-yellow-300/20",
+    Psychic: "from-purple-500/20 via-violet-500/10 to-fuchsia-400/20",
+    Dark: "from-slate-800/30 via-gray-900/20 to-slate-700/30",
+    Water: "from-blue-500/20 via-cyan-500/10 to-blue-400/20",
+    Earth: "from-amber-700/20 via-orange-800/10 to-amber-600/20",
+    Normal: "from-gray-400/20 via-slate-500/10 to-gray-300/20",
+  };
+  return gradients[element] || gradients.Normal;
 }
 
 /**
- * HoloCard Component
- * A holographic trading card with 3D tilt effects
+ * Get element border color
+ */
+function getElementBorderColor(element: ElementType): string {
+  const colors: Record<ElementType, string> = {
+    Fairy: "border-pink-400/50",
+    Steel: "border-slate-400/50",
+    Fire: "border-orange-500/50",
+    Electric: "border-yellow-400/50",
+    Psychic: "border-purple-500/50",
+    Dark: "border-slate-600/50",
+    Water: "border-blue-400/50",
+    Earth: "border-amber-600/50",
+    Normal: "border-gray-400/50",
+  };
+  return colors[element] || colors.Normal;
+}
+
+/**
+ * Get rarity styles
+ */
+function getRarityStyles(rarity: string): { bg: string; text: string } {
+  const styles: Record<string, { bg: string; text: string }> = {
+    LEGENDARY: {
+      bg: "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500",
+      text: "text-black",
+    },
+    "ULTRA RARE": {
+      bg: "bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500",
+      text: "text-white",
+    },
+    RARE: {
+      bg: "bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500",
+      text: "text-white",
+    },
+    UNCOMMON: {
+      bg: "bg-gradient-to-r from-green-500 via-emerald-400 to-green-500",
+      text: "text-white",
+    },
+    COMMON: {
+      bg: "bg-gradient-to-r from-gray-500 via-slate-400 to-gray-500",
+      text: "text-white",
+    },
+  };
+  return styles[rarity] || styles.COMMON;
+}
+
+/**
+ * HoloCard Component - Pokemon/TCG Style
  */
 export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
   function HoloCard({ data }, ref) {
     const cardRef = useRef<HTMLDivElement>(null);
     const { transform, handleMouseMove, handleMouseLeave } = useTilt();
-    const { user, stats } = data;
+    const { user, tcg } = data;
 
-    // Proxy the user image to avoid CORS issues during export
     const proxiedImageUrl = useMemo(
       () => getProxiedImageUrl(user.picture_xl || user.picture_big),
       [user.picture_xl, user.picture_big]
     );
+
+    const elementGradient = getElementGradient(tcg.element.element);
+    const elementBorder = getElementBorderColor(tcg.element.element);
+    const rarityStyles = getRarityStyles(tcg.rarity);
 
     return (
       <motion.div
@@ -108,7 +177,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
       >
         <div
           ref={cardRef}
-          className="relative w-[340px] md:w-[380px] aspect-[2.5/3.5] cursor-pointer"
+          className="relative w-[320px] md:w-[360px] aspect-[2.5/3.5] cursor-pointer"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{
@@ -118,32 +187,33 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
         >
           {/* Card Container with 3D Transform */}
           <div
-            className="relative w-full h-full rounded-[2rem] overflow-hidden transition-transform duration-200 ease-out"
+            className={`relative w-full h-full rounded-[1.5rem] overflow-hidden transition-transform duration-200 ease-out border-4 ${elementBorder}`}
             style={{
               transform: `rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg)`,
               transformStyle: "preserve-3d",
               boxShadow: `
                 0 25px 50px -12px rgba(0, 0, 0, 0.8),
-                0 0 60px -15px rgba(162, 54, 255, 0.4),
+                0 0 60px -15px ${tcg.element.color}40,
                 ${transform.rotateY * 2}px ${transform.rotateX * -2}px 30px rgba(0, 0, 0, 0.3)
               `,
             }}
           >
-            {/* Card Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23]" />
+            {/* Card Background with Element Gradient */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${elementGradient}`} />
+            <div className="absolute inset-0 bg-[#0a0a12]/90" />
 
             {/* Holographic Overlay */}
             <div
-              className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none z-20"
+              className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none z-20"
               style={{
                 background: `
                   linear-gradient(
-                    ${45 + transform.rotateY * 2}deg,
-                    rgba(255, 107, 107, 0.5) 0%,
-                    rgba(254, 202, 87, 0.5) 25%,
-                    rgba(72, 219, 251, 0.5) 50%,
-                    rgba(162, 54, 255, 0.5) 75%,
-                    rgba(29, 209, 161, 0.5) 100%
+                    ${45 + transform.rotateY * 3}deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.1) 25%,
+                    rgba(${tcg.element.color}, 0.3) 50%,
+                    rgba(255, 255, 255, 0.1) 75%,
+                    transparent 100%
                   )
                 `,
               }}
@@ -156,7 +226,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                 background: `
                   radial-gradient(
                     circle at ${transform.shineX}% ${transform.shineY}%,
-                    rgba(255, 255, 255, 0.25) 0%,
+                    rgba(255, 255, 255, 0.3) 0%,
                     rgba(255, 255, 255, 0.1) 20%,
                     transparent 60%
                   )
@@ -166,25 +236,33 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
             />
 
             {/* Card Content */}
-            <div className="relative h-full flex flex-col p-5 z-10">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Disc3 className="w-5 h-5 text-primary" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                    Deezer Legend
-                  </span>
+            <div className="relative h-full flex flex-col p-4 z-10">
+              {/* === HEADER: Name + HP === */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <h2 className="text-lg md:text-xl font-extrabold text-white truncate">
+                    {user.name}
+                  </h2>
                 </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${getRankClass(stats.legendRank)}`}
-                >
-                  {stats.legendRank}
-                </span>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <span className="text-xs text-white/60">HP</span>
+                  <span className="text-2xl font-black text-white">{tcg.hp}</span>
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center ml-1"
+                    style={{ backgroundColor: tcg.element.color }}
+                  >
+                    {getElementIcon(tcg.element.icon, "w-4 h-4 text-white")}
+                  </div>
+                </div>
               </div>
 
-              {/* User Image */}
-              <div className="relative mx-auto mb-4">
-                <div className="relative w-36 h-36 md:w-40 md:h-40 rounded-2xl overflow-hidden border-4 border-white/10 shadow-2xl">
+              {/* === IMAGE AREA === */}
+              <div className="relative mb-3">
+                {/* Image Frame */}
+                <div
+                  className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border-2"
+                  style={{ borderColor: `${tcg.element.color}60` }}
+                >
                   <Image
                     src={proxiedImageUrl}
                     alt={user.name}
@@ -194,64 +272,90 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                     priority
                     crossOrigin="anonymous"
                   />
+
+                  {/* Element Type Badge */}
+                  <div
+                    className="absolute bottom-2 right-2 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold"
+                    style={{ backgroundColor: `${tcg.element.color}`, color: "#fff" }}
+                  >
+                    {getElementIcon(tcg.element.icon, "w-3 h-3")}
+                    <span>{tcg.element.element}</span>
+                  </div>
+
+                  {/* Rarity Badge */}
+                  <div
+                    className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${rarityStyles.bg} ${rarityStyles.text}`}
+                  >
+                    {tcg.rarity}
+                  </div>
                 </div>
 
-                {/* Decorative Corners */}
-                <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-primary rounded-tl-lg" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-primary rounded-tr-lg" />
-                <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-primary rounded-bl-lg" />
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-primary rounded-br-lg" />
-              </div>
-
-              {/* User Name */}
-              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-white mb-1 truncate px-2">
-                {user.name}
-              </h2>
-
-              {/* Country */}
-              {user.country && (
-                <p className="text-center text-text-secondary text-sm mb-4">
-                  📍 {user.country}
+                {/* Flavor Text below image */}
+                <p className="text-[10px] text-white/50 italic mt-1 text-center px-2 line-clamp-1">
+                  {tcg.flavorText}
                 </p>
-              )}
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-3 mt-auto">
-                <StatBox
-                  icon={<Users className="w-4 h-4" />}
-                  label="Fans"
-                  value={formatNumber(stats.totalFans)}
-                />
-                <StatBox
-                  icon={<ListMusic className="w-4 h-4" />}
-                  label="Playlists"
-                  value={formatNumber(stats.totalPlaylists)}
-                />
-                <StatBox
-                  icon={<Music className="w-4 h-4" />}
-                  label="Tracks"
-                  value={formatNumber(stats.totalTracks)}
-                />
-                <StatBox
-                  icon={<Zap className="w-4 h-4" />}
-                  label="Power"
-                  value={formatNumber(stats.powerLevel)}
-                  highlight
-                />
               </div>
 
-              {/* Bottom Badge */}
-              <div className="mt-4 flex items-center justify-center">
-                <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                  <span className="text-xs font-medium text-text-secondary">
-                    🎵 {stats.topGenre} Enthusiast
-                  </span>
+              {/* === ATTACKS LIST === */}
+              <div className="flex-1 flex flex-col gap-2">
+                {tcg.attacks.map((attack, index) => (
+                  <AttackRow
+                    key={index}
+                    attack={attack}
+                    elementColor={tcg.element.color}
+                    elementIcon={tcg.element.icon}
+                  />
+                ))}
+              </div>
+
+              {/* === FOOTER: Weakness / Resistance / Retreat === */}
+              <div className="mt-3 pt-2 border-t border-white/10">
+                <div className="flex items-center justify-between text-[10px]">
+                  {/* Weakness */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-white/40 uppercase tracking-wide">Weakness</span>
+                    <WeaknessIcon type={tcg.element.weakness} />
+                    <span className="text-red-400 font-bold">×2</span>
+                  </div>
+
+                  {/* Resistance */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-white/40 uppercase tracking-wide">Resistance</span>
+                    <WeaknessIcon type={tcg.element.resistance} />
+                    <span className="text-green-400 font-bold">-20</span>
+                  </div>
+
+                  {/* Retreat Cost */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-white/40 uppercase tracking-wide">Retreat</span>
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: tcg.retreatCost }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center"
+                        >
+                          <Disc3 className="w-3 h-3 text-white/60" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Card Number / Set Info */}
+              <div className="mt-2 flex items-center justify-between text-[8px] text-white/30">
+                <span>DEEZER LEGENDS • {user.country || "INTL"}</span>
+                <span>#{user.id.toString().slice(-4)}/9999</span>
               </div>
             </div>
 
-            {/* Card Border Glow */}
-            <div className="absolute inset-0 rounded-[2rem] border-2 border-white/10 pointer-events-none" />
+            {/* Card Border Inner Glow */}
+            <div
+              className="absolute inset-0 rounded-[1.3rem] pointer-events-none"
+              style={{
+                boxShadow: `inset 0 0 20px ${tcg.element.color}20`,
+              }}
+            />
           </div>
         </div>
 
@@ -259,8 +363,7 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
         <div
           className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 blur-2xl opacity-50"
           style={{
-            background:
-              "radial-gradient(ellipse, rgba(162, 54, 255, 0.4) 0%, transparent 70%)",
+            background: `radial-gradient(ellipse, ${tcg.element.color}40 0%, transparent 70%)`,
           }}
         />
       </motion.div>
@@ -269,39 +372,72 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
 );
 
 /**
- * StatBox Component
- * Individual stat display box
+ * Attack Row Component
  */
-function StatBox({
-  icon,
-  label,
-  value,
-  highlight = false,
+function AttackRow({
+  attack,
+  elementColor,
+  elementIcon,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  highlight?: boolean;
+  attack: Attack;
+  elementColor: string;
+  elementIcon: string;
 }) {
   return (
-    <div
-      className={`
-        flex items-center gap-2 p-3 rounded-xl
-        ${highlight ? "bg-primary/20 border border-primary/30" : "bg-white/5 border border-white/10"}
-      `}
-    >
-      <div className={highlight ? "text-primary" : "text-text-secondary"}>
-        {icon}
+    <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+      {/* Energy Cost */}
+      <div className="flex gap-0.5 flex-shrink-0">
+        {Array.from({ length: attack.energyCost }).map((_, i) => (
+          <div
+            key={i}
+            className="w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: elementColor }}
+          >
+            {getElementIcon(elementIcon, "w-3 h-3 text-white")}
+          </div>
+        ))}
       </div>
+
+      {/* Attack Name & Description */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-text-secondary">{label}</p>
-        <p
-          className={`font-bold truncate ${highlight ? "text-primary" : "text-white"}`}
-        >
-          {value}
-        </p>
+        <p className="text-sm font-bold text-white truncate">{attack.name}</p>
+        {attack.description && (
+          <p className="text-[10px] text-white/50 truncate">{attack.description}</p>
+        )}
+      </div>
+
+      {/* Damage */}
+      <div className="flex-shrink-0">
+        <span className="text-2xl font-black text-white">{attack.damage}</span>
       </div>
     </div>
   );
 }
 
+/**
+ * Weakness/Resistance Icon Component
+ */
+function WeaknessIcon({ type }: { type: ElementType }) {
+  const iconMap: Record<ElementType, { icon: string; color: string }> = {
+    Fairy: { icon: "Sparkles", color: "#ff69b4" },
+    Steel: { icon: "Shield", color: "#b8b8d0" },
+    Fire: { icon: "Flame", color: "#ff6b35" },
+    Electric: { icon: "Zap", color: "#ffd700" },
+    Psychic: { icon: "Eye", color: "#9b59b6" },
+    Dark: { icon: "Moon", color: "#2c3e50" },
+    Water: { icon: "Droplets", color: "#3498db" },
+    Earth: { icon: "Mountain", color: "#8b4513" },
+    Normal: { icon: "Music", color: "#a0a0a0" },
+  };
+
+  const { icon, color } = iconMap[type] || iconMap.Normal;
+
+  return (
+    <div
+      className="w-5 h-5 rounded-full flex items-center justify-center"
+      style={{ backgroundColor: color }}
+    >
+      {getElementIcon(icon, "w-3 h-3 text-white")}
+    </div>
+  );
+}
