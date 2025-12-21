@@ -1,65 +1,217 @@
-import Image from "next/image";
+"use client";
 
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { HeroSearch } from "@/app/components/hero-search";
+import { HoloCard } from "@/app/components/holo-card";
+import { DownloadButton } from "@/app/components/download-button";
+import { BackgroundEffects } from "@/app/components/background-effects";
+import { getLegendCardData } from "@/app/lib/deezer-api";
+import type { DeezerUser, LegendCardData } from "@/app/types/deezer";
+
+type AppState = "search" | "loading" | "card" | "error";
+
+/**
+ * Main Page Component
+ * Orchestrates the flow: Search → Loading → Card Display
+ */
 export default function Home() {
+  const [state, setState] = useState<AppState>("search");
+  const [cardData, setCardData] = useState<LegendCardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleUserSelect = useCallback(async (user: DeezerUser) => {
+    setState("loading");
+    setError(null);
+
+    try {
+      const data = await getLegendCardData(user.id);
+      setCardData(data);
+      setState("card");
+    } catch (err) {
+      console.error("Failed to load user data:", err);
+      setError("Failed to generate card. Please try again.");
+      setState("error");
+    }
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setState("search");
+    setCardData(null);
+    setError(null);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="relative min-h-screen flex flex-col items-center justify-center p-6">
+      {/* Animated Background */}
+      <BackgroundEffects />
+
+      {/* Content Container */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto">
+        <AnimatePresence mode="wait">
+          {/* Search State */}
+          {state === "search" && (
+            <motion.div
+              key="search"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="py-8"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <HeroSearch onUserSelect={handleUserSelect} />
+            </motion.div>
+          )}
+
+          {/* Loading State */}
+          {state === "loading" && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center justify-center py-20"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              <motion.div
+                className="relative"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <div className="w-20 h-20 rounded-full border-4 border-primary/20" />
+                <div className="absolute inset-0 w-20 h-20 rounded-full border-4 border-transparent border-t-primary" />
+              </motion.div>
+
+              <motion.p
+                className="mt-6 text-xl font-semibold text-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                Generating Legend Card...
+              </motion.p>
+
+              <motion.p
+                className="mt-2 text-text-secondary"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                Analyzing music stats and creating your card
+              </motion.p>
+            </motion.div>
+          )}
+
+          {/* Card Display State */}
+          {state === "card" && cardData && (
+            <motion.div
+              key="card"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center py-8"
+            >
+              {/* Back Button */}
+              <motion.button
+                className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 rounded-full glass text-text-secondary hover:text-white transition-colors"
+                onClick={handleReset}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ x: -4 }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm font-medium">New Search</span>
+              </motion.button>
+
+              {/* Card */}
+              <HoloCard ref={cardRef} data={cardData} />
+
+              {/* Actions */}
+              <motion.div
+                className="mt-8 flex flex-col sm:flex-row items-center gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <DownloadButton
+                  cardRef={cardRef}
+                  userName={cardData.user.name}
+                />
+
+                <motion.button
+                  className="btn-secondary flex items-center gap-2"
+                  onClick={handleReset}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Search Another</span>
+                </motion.button>
+              </motion.div>
+
+              {/* Share Hint */}
+              <motion.p
+                className="mt-6 text-sm text-text-muted text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                Share your Legend Card on social media! 🎵
+              </motion.p>
+            </motion.div>
+          )}
+
+          {/* Error State */}
+          {state === "error" && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                <span className="text-3xl">😢</span>
+              </div>
+
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Oops! Something went wrong
+              </h2>
+
+              <p className="text-text-secondary mb-6 max-w-md">
+                {error || "We couldn't generate the Legend Card. Please try again."}
+              </p>
+
+              <motion.button
+                className="btn-primary flex items-center gap-2"
+                onClick={handleReset}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Try Again</span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Footer */}
+      <motion.footer
+        className="absolute bottom-4 left-0 right-0 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <p className="text-xs text-text-muted">
+          Made with 💜 by Maxime Mansiet • Not affiliated with Deezer
+        </p>
+      </motion.footer>
+    </main>
   );
 }
