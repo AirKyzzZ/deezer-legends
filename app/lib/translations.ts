@@ -44,6 +44,7 @@ export interface Translations {
 
   // Footer
   madeWith: string;
+  creatorName: string;
   notAffiliated: string;
   shareOnSocial: string;
 
@@ -95,7 +96,8 @@ export const translations: Record<Language, Translations> = {
     tryAgain: "Try Again",
 
     // Footer
-    madeWith: "Made with 💜 by Maxime Mansiet",
+    madeWith: "Made with 💜 by",
+    creatorName: "Maxime Mansiet",
     notAffiliated: "Not affiliated with Deezer",
     shareOnSocial: "Share your Legend Card on social media! 🎵",
 
@@ -157,7 +159,8 @@ export const translations: Record<Language, Translations> = {
     tryAgain: "Réessayer",
 
     // Footer
-    madeWith: "Fait avec 💜 par Maxime Mansiet",
+    madeWith: "Fait avec 💜 par",
+    creatorName: "Maxime Mansiet",
     notAffiliated: "Non affilié à Deezer",
     shareOnSocial: "Partagez votre Carte Légende sur les réseaux ! 🎵",
 

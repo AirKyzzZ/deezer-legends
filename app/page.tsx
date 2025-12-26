@@ -220,7 +220,17 @@ export default function Home() {
         transition={{ delay: 1 }}
       >
         <p className="text-xs text-text-muted">
-          {t.madeWith} • {t.notAffiliated}
+          {t.madeWith}{" "}
+          <a
+            href="https://github.com/airkyzzz/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary/80 underline transition-colors"
+          >
+            {t.creatorName}
+          </a>
+          {" • "}
+          {t.notAffiliated}
         </p>
       </motion.footer>
     </main>
