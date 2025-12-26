@@ -34,16 +34,28 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
         throw new Error("Card element not found");
       }
 
+      // Ensure all images are fully loaded before capturing
+      const images = Array.from(cardElement.querySelectorAll("img"));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve; // Continue even if error
+          });
+        })
+      );
+
+      // Wait a tiny bit for rendering to settle
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Generate PNG with high quality settings
       const dataUrl = await toPng(cardElement, {
         quality: 1,
         pixelRatio: 3, // High resolution
         backgroundColor: "#000000",
         cacheBust: true, // Bust cache for fresh images
-        fetchRequestInit: {
-          mode: "cors",
-          cache: "no-cache",
-        },
+        skipAutoScale: true, // Prevent html-to-image from handling scaling, we want raw size * pixelRatio
         style: {
           transform: "none", // Reset any transforms for clean export
         },
