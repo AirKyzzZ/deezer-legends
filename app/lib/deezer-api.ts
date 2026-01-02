@@ -108,7 +108,12 @@ const DEFAULT_GENRE: ElementData = {
 // Genre-based fallback attacks when no tracks are available
 const GENRE_ATTACKS: Record<string, Attack[]> = {
   Pop: [
-    { name: "Chart Topper", damage: 40, energyCost: 2, description: "A catchy hit that stuns opponents" },
+    {
+      name: "Chart Topper",
+      damage: 40,
+      energyCost: 2,
+      description: "A catchy hit that stuns opponents",
+    },
     { name: "Viral Hook", damage: 70, energyCost: 3, description: "An irresistible melody" },
   ],
   Rock: [
@@ -161,16 +166,12 @@ const DEFAULT_ATTACKS: Attack[] = [
 /**
  * Search for Deezer users by query
  */
-export async function searchUsers(
-  query: string
-): Promise<DeezerSearchResponse<DeezerUser>> {
+export async function searchUsers(query: string): Promise<DeezerSearchResponse<DeezerUser>> {
   if (!query.trim()) {
     return { data: [], total: 0 };
   }
 
-  const response = await fetch(
-    `${API_BASE}/search?q=${encodeURIComponent(query)}`
-  );
+  const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`);
 
   if (!response.ok) {
     throw new Error("Failed to search users");
@@ -195,9 +196,7 @@ export async function getUser(userId: number): Promise<DeezerUserFull> {
 /**
  * Get user's playlists
  */
-export async function getUserPlaylists(
-  userId: number
-): Promise<DeezerPlaylistsResponse> {
+export async function getUserPlaylists(userId: number): Promise<DeezerPlaylistsResponse> {
   const response = await fetch(`${API_BASE}/playlists/${userId}`);
 
   if (!response.ok) {
@@ -210,9 +209,7 @@ export async function getUserPlaylists(
 /**
  * Get tracks from a playlist
  */
-export async function getPlaylistTracks(
-  playlistId: number
-): Promise<DeezerTracksResponse> {
+export async function getPlaylistTracks(playlistId: number): Promise<DeezerTracksResponse> {
   const response = await fetch(`${API_BASE}/tracks/${playlistId}`);
 
   if (!response.ok) {
@@ -255,36 +252,36 @@ const DEEZER_GENRE_MAP: Record<number, string> = {
   // Pop
   132: "Pop",
   165: "Pop", // Pop international
-  
+
   // Rock
   152: "Rock",
   95: "Rock", // Alternative rock
-  
+
   // Rap/Hip-Hop
   116: "Rap",
   129: "Rap", // Hip-Hop
-  
+
   // Electronic/Dance
   106: "Electronic",
   113: "Electronic", // Dance
   52: "Electronic", // Electro
-  
+
   // R&B
   84: "R&B", // Soul & Funk
   169: "R&B",
-  
+
   // Jazz
   65: "Jazz",
-  
+
   // Classical
   98: "Classical",
-  
+
   // Metal
   464: "Metal",
-  
+
   // Indie/Alternative
   85: "Indie", // Alternative
-  
+
   // Default catches
   0: "Mixed",
 };
@@ -294,17 +291,30 @@ const DEEZER_GENRE_MAP: Record<number, string> = {
  */
 function normalizeGenreName(genreName: string): string {
   const name = genreName.toLowerCase();
-  
+
   if (name.includes("pop")) return "Pop";
   if (name.includes("rock") && !name.includes("hip")) return "Rock";
   if (name.includes("rap") || name.includes("hip-hop") || name.includes("hip hop")) return "Rap";
-  if (name.includes("r&b") || name.includes("rnb") || name.includes("soul") || name.includes("funk")) return "R&B";
-  if (name.includes("electro") || name.includes("dance") || name.includes("house") || name.includes("techno") || name.includes("edm")) return "Electronic";
+  if (
+    name.includes("r&b") ||
+    name.includes("rnb") ||
+    name.includes("soul") ||
+    name.includes("funk")
+  )
+    return "R&B";
+  if (
+    name.includes("electro") ||
+    name.includes("dance") ||
+    name.includes("house") ||
+    name.includes("techno") ||
+    name.includes("edm")
+  )
+    return "Electronic";
   if (name.includes("jazz")) return "Jazz";
   if (name.includes("classical") || name.includes("classique")) return "Classical";
   if (name.includes("metal") || name.includes("hardcore")) return "Metal";
   if (name.includes("indie") || name.includes("alternative")) return "Indie";
-  
+
   return "Mixed";
 }
 
@@ -313,21 +323,21 @@ function normalizeGenreName(genreName: string): string {
  */
 async function determineTopGenre(tracks: DeezerTrack[]): Promise<string> {
   if (!tracks.length) return "Mixed";
-  
+
   const genreCounts: Record<string, number> = {};
-  
+
   // Collect unique album IDs to fetch
-  const albumIds = [...new Set(tracks.map(t => t.album?.id).filter(Boolean))];
-  
+  const albumIds = [...new Set(tracks.map((t) => t.album?.id).filter(Boolean))];
+
   // Fetch album details in parallel (limit to 10 albums to avoid too many requests)
   const albumsToFetch = albumIds.slice(0, 10);
-  const albumPromises = albumsToFetch.map(id => getAlbum(id));
+  const albumPromises = albumsToFetch.map((id) => getAlbum(id));
   const albums = await Promise.all(albumPromises);
-  
+
   // Count genres from albums
   for (const album of albums) {
     if (!album?.genres?.data) continue;
-    
+
     for (const genre of album.genres.data) {
       if (genre.name) {
         const normalizedGenre = normalizeGenreName(genre.name);
@@ -335,23 +345,23 @@ async function determineTopGenre(tracks: DeezerTrack[]): Promise<string> {
       }
     }
   }
-  
+
   // If we couldn't get genres from albums, try to infer from artist names or track patterns
   if (Object.keys(genreCounts).length === 0) {
     return "Mixed";
   }
-  
+
   // Find the genre with the highest count
   let topGenre = "Mixed";
   let maxCount = 0;
-  
+
   for (const [genre, count] of Object.entries(genreCounts)) {
     if (count > maxCount && genre !== "Mixed") {
       maxCount = count;
       topGenre = genre;
     }
   }
-  
+
   return topGenre;
 }
 
@@ -386,7 +396,10 @@ function extractTopArtists(tracks: DeezerTrack[]): Attack[] {
   // Convert to attacks
   return sortedArtists.map(([artistName, data], index) => {
     const baseDamage = Math.floor((data.track.rank || 500000) / 10000);
-    const damage = Math.min(120, Math.max(30, baseDamage + data.count * 5 + (index === 0 ? 10 : 0)));
+    const damage = Math.min(
+      120,
+      Math.max(30, baseDamage + data.count * 5 + (index === 0 ? 10 : 0))
+    );
 
     return {
       name: artistName,
@@ -400,10 +413,7 @@ function extractTopArtists(tracks: DeezerTrack[]): Attack[] {
 /**
  * Generate attacks from pre-fetched user tracks
  */
-function generateAttacksFromTracks(
-  tracks: DeezerTrack[],
-  genre: string
-): Attack[] {
+function generateAttacksFromTracks(tracks: DeezerTrack[], genre: string): Attack[] {
   if (tracks.length >= 2) {
     const topArtists = extractTopArtists(tracks);
     if (topArtists.length >= 2) {
@@ -465,9 +475,7 @@ function calculateStats(
 
   const powerLevel = Math.min(
     9999,
-    Math.floor(
-      userPlaylists * 10 + userFans * 5 + totalTracks * 2 + totalFans * 3
-    )
+    Math.floor(userPlaylists * 10 + userFans * 5 + totalTracks * 2 + totalFans * 3)
   );
 
   let legendRank: string;
@@ -550,25 +558,16 @@ async function collectUserTracks(playlists: DeezerPlaylistsResponse): Promise<De
  * Fetch complete legend card data for a user
  */
 export async function getLegendCardData(userId: number): Promise<LegendCardData> {
-  const [user, playlists] = await Promise.all([
-    getUser(userId),
-    getUserPlaylists(userId),
-  ]);
+  const [user, playlists] = await Promise.all([getUser(userId), getUserPlaylists(userId)]);
 
   // Collect tracks first to determine genre
   const userTracks = await collectUserTracks(playlists);
-  
+
   // Determine the actual top genre from user's listening habits
   const topGenre = await determineTopGenre(userTracks);
 
   const stats = calculateStats(user, playlists, topGenre);
-  const tcg = await buildTCGCardData(
-    user,
-    playlists,
-    topGenre,
-    stats.totalTracks,
-    userTracks
-  );
+  const tcg = await buildTCGCardData(user, playlists, topGenre, stats.totalTracks, userTracks);
 
   return { user, stats, tcg };
 }

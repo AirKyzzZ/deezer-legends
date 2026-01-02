@@ -2,7 +2,17 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share2, X, Twitter, Linkedin, Send, MessageCircle, Link2, Check, Loader2 } from "lucide-react";
+import {
+  Share2,
+  X,
+  Twitter,
+  Linkedin,
+  Send,
+  MessageCircle,
+  Link2,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { useLanguage } from "@/app/context/language-context";
 import { toBlob } from "html-to-image";
 
@@ -51,9 +61,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
     if (!cardRef.current) return null;
 
     try {
-      const cardElement = cardRef.current.querySelector(
-        ".cursor-pointer"
-      ) as HTMLElement;
+      const cardElement = cardRef.current.querySelector(".cursor-pointer") as HTMLElement;
 
       if (!cardElement) return null;
 
@@ -78,7 +86,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
     setIsGenerating(true);
     try {
       const blob = await generateCardImage();
-      
+
       if (blob && navigator.share) {
         const file = new File([blob], "deezer-legend-card.png", {
           type: "image/png",
@@ -106,7 +114,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
       }
     } catch (err) {
       console.log("Share cancelled or failed:", err);
-      // If native share fails/cancelled, maybe open menu? 
+      // If native share fails/cancelled, maybe open menu?
       // Usually users cancel, so doing nothing is fine.
     } finally {
       setIsGenerating(false);
@@ -126,7 +134,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
   const shareOptions: ShareOption[] = [
     {
       name: "X (Twitter)",
-      icon: <Twitter className="w-5 h-5" />,
+      icon: <Twitter className="h-5 w-5" />,
       color: "#000000",
       action: () => {
         const text = encodeURIComponent(shareText + " " + shareUrl);
@@ -137,7 +145,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
     },
     {
       name: "LinkedIn",
-      icon: <Linkedin className="w-5 h-5" />,
+      icon: <Linkedin className="h-5 w-5" />,
       color: "#0077b5",
       action: () => {
         const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -147,7 +155,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
     },
     {
       name: "Discord",
-      icon: <MessageCircle className="w-5 h-5" />,
+      icon: <MessageCircle className="h-5 w-5" />,
       color: "#5865F2",
       action: () => {
         navigator.clipboard.writeText(shareText + " " + shareUrl);
@@ -160,7 +168,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
     },
     {
       name: "Telegram",
-      icon: <Send className="w-5 h-5" />,
+      icon: <Send className="h-5 w-5" />,
       color: "#0088cc",
       action: () => {
         const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
@@ -176,7 +184,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
   return (
     <div className="relative" ref={menuRef}>
       <motion.button
-        className="btn-secondary flex items-center gap-2 min-w-[120px] justify-center"
+        className="btn-secondary flex min-w-[120px] items-center justify-center gap-2"
         onClick={() => (hasNativeShare ? handleNativeShare() : setIsOpen(!isOpen))}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.98 }}
@@ -186,9 +194,9 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
         disabled={isGenerating}
       >
         {isGenerating ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Share2 className="w-4 h-4" />
+          <Share2 className="h-4 w-4" />
         )}
         <span>{t.shareCard}</span>
       </motion.button>
@@ -197,20 +205,20 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
+            className="bg-surface absolute bottom-full left-1/2 z-50 mb-3 w-56 -translate-x-1/2 overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-3 border-b border-white/10">
+            <div className="flex items-center justify-between border-b border-white/10 p-3">
               <span className="text-sm font-semibold text-white">{t.shareCard}</span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white/50 hover:text-white transition-colors"
+                className="text-white/50 transition-colors hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -220,10 +228,10 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
                 <button
                   key={option.name}
                   onClick={option.action}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-left"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-white/10"
                 >
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    className="flex h-8 w-8 items-center justify-center rounded-full"
                     style={{ backgroundColor: option.color }}
                   >
                     {option.icon}
@@ -235,18 +243,16 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
               {/* Copy Link */}
               <button
                 onClick={handleCopyLink}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-left mt-1 border-t border-white/5 pt-3"
+                className="mt-1 flex w-full items-center gap-3 rounded-xl border-t border-white/5 px-3 py-2.5 pt-3 text-left transition-colors hover:bg-white/10"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <div className="bg-primary/20 flex h-8 w-8 items-center justify-center rounded-full">
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-400" />
+                    <Check className="h-4 w-4 text-green-400" />
                   ) : (
-                    <Link2 className="w-4 h-4 text-primary" />
+                    <Link2 className="text-primary h-4 w-4" />
                   )}
                 </div>
-                <span className="text-sm text-white">
-                  {copied ? "Copied!" : "Copy Link"}
-                </span>
+                <span className="text-sm text-white">{copied ? "Copied!" : "Copy Link"}</span>
               </button>
             </div>
           </motion.div>

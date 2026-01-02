@@ -35,4 +35,3 @@ export const deezerFont = localFont({
   variable: "--font-deezer",
   display: "swap",
 });
-

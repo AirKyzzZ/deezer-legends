@@ -25,20 +25,23 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleUserSelect = useCallback(async (user: DeezerUser) => {
-    setState("loading");
-    setError(null);
+  const handleUserSelect = useCallback(
+    async (user: DeezerUser) => {
+      setState("loading");
+      setError(null);
 
-    try {
-      const data = await getLegendCardData(user.id);
-      setCardData(data);
-      setState("card");
-    } catch (err) {
-      console.error("Failed to load user data:", err);
-      setError(t.errorMessage);
-      setState("error");
-    }
-  }, [t.errorMessage]);
+      try {
+        const data = await getLegendCardData(user.id);
+        setCardData(data);
+        setState("card");
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+        setError(t.errorMessage);
+        setState("error");
+      }
+    },
+    [t.errorMessage]
+  );
 
   const handleReset = useCallback(() => {
     setState("search");
@@ -47,12 +50,12 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center p-6">
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-6">
       {/* Animated Background */}
       <BackgroundEffects />
 
       {/* Content Container */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto">
+      <div className="relative z-10 mx-auto w-full max-w-4xl">
         <AnimatePresence mode="wait">
           {/* Search State */}
           {state === "search" && (
@@ -83,8 +86,8 @@ export default function Home() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <div className="w-20 h-20 rounded-full border-4 border-primary/20" />
-                <div className="absolute inset-0 w-20 h-20 rounded-full border-4 border-transparent border-t-primary" />
+                <div className="border-primary/20 h-20 w-20 rounded-full border-4" />
+                <div className="border-t-primary absolute inset-0 h-20 w-20 rounded-full border-4 border-transparent" />
               </motion.div>
 
               <motion.p
@@ -97,7 +100,7 @@ export default function Home() {
               </motion.p>
 
               <motion.p
-                className="mt-2 text-text-secondary"
+                className="text-text-secondary mt-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -119,14 +122,14 @@ export default function Home() {
             >
               {/* Back Button */}
               <motion.button
-                className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 rounded-full glass text-text-secondary hover:text-white transition-colors"
+                className="glass text-text-secondary absolute top-6 left-6 flex items-center gap-2 rounded-full px-4 py-2 transition-colors hover:text-white"
                 onClick={handleReset}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 }}
                 whileHover={{ x: -4 }}
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 <span className="text-sm font-medium">{t.newSearch}</span>
               </motion.button>
 
@@ -135,20 +138,14 @@ export default function Home() {
 
               {/* Actions */}
               <motion.div
-                className="mt-8 flex flex-col sm:flex-row items-center gap-3"
+                className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <DownloadButton
-                  cardRef={cardRef}
-                  userName={cardData.user.name}
-                />
+                <DownloadButton cardRef={cardRef} userName={cardData.user.name} />
 
-                <ShareButton
-                  userName={cardData.user.name}
-                  cardRef={cardRef}
-                />
+                <ShareButton userName={cardData.user.name} cardRef={cardRef} />
 
                 <motion.button
                   className="btn-secondary flex items-center gap-2"
@@ -159,14 +156,14 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="h-4 w-4" />
                   <span>{t.searchAnother}</span>
                 </motion.button>
               </motion.div>
 
               {/* Share Hint */}
               <motion.p
-                className="mt-6 text-sm text-text-muted text-center"
+                className="text-text-muted mt-6 text-center text-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
@@ -186,17 +183,13 @@ export default function Home() {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center py-20 text-center"
             >
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
                 <span className="text-3xl">😢</span>
               </div>
 
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {t.oops}
-              </h2>
+              <h2 className="mb-2 text-2xl font-bold text-white">{t.oops}</h2>
 
-              <p className="text-text-secondary mb-6 max-w-md">
-                {error || t.errorMessage}
-              </p>
+              <p className="text-text-secondary mb-6 max-w-md">{error || t.errorMessage}</p>
 
               <motion.button
                 className="btn-primary flex items-center gap-2"
@@ -204,7 +197,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="h-4 w-4" />
                 <span>{t.tryAgain}</span>
               </motion.button>
             </motion.div>
@@ -214,12 +207,12 @@ export default function Home() {
 
       {/* Footer */}
       <motion.footer
-        className="absolute bottom-4 left-0 right-0 text-center"
+        className="absolute right-0 bottom-4 left-0 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
       >
-        <p className="text-xs text-text-muted">
+        <p className="text-text-muted text-xs">
           {t.madeWith}{" "}
           <a
             href="https://github.com/airkyzzz/"

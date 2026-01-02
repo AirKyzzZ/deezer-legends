@@ -14,10 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 
   if (!id || isNaN(Number(id))) {
-    return NextResponse.json(
-      { error: "Valid user ID is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Valid user ID is required" }, { status: 400 });
   }
 
   try {
@@ -36,10 +33,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Check if user was found
     if (data.error) {
-      return NextResponse.json(
-        { error: data.error.message || "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: data.error.message || "User not found" }, { status: 404 });
     }
 
     return NextResponse.json(data, {
@@ -49,10 +43,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("Error fetching Deezer user:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }
-

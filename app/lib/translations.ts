@@ -124,7 +124,8 @@ export const translations: Record<Language, Translations> = {
     // Hero Search
     discoverYourMusicLegend: "Découvrez Votre Légende Musicale",
     title: "Deezer Legends",
-    subtitle: "Recherchez n'importe quel utilisateur Deezer et générez sa carte holographique unique",
+    subtitle:
+      "Recherchez n'importe quel utilisateur Deezer et générez sa carte holographique unique",
     searchPlaceholder: "Entrez un nom d'utilisateur Deezer...",
     searchHint: "Essayez de rechercher votre nom ou pseudo Deezer PUBLIC",
     viewCard: "Voir la Carte",
@@ -191,4 +192,3 @@ export const translations: Record<Language, Translations> = {
 export function t(lang: Language, key: keyof Translations): string | Record<string, string> {
   return translations[lang][key];
 }
-

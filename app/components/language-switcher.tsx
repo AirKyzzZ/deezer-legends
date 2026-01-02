@@ -18,7 +18,7 @@ export function LanguageSwitcher() {
 
   return (
     <motion.div
-      className="flex items-center gap-1 p-1 rounded-full bg-surface border border-white/10"
+      className="bg-surface flex items-center gap-1 rounded-full border border-white/10 p-1"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
@@ -27,14 +27,11 @@ export function LanguageSwitcher() {
         <button
           key={lang.code}
           onClick={() => setLanguage(lang.code)}
-          className={`
-            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all
-            ${
-              language === lang.code
-                ? "bg-primary text-white shadow-lg"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }
-          `}
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+            language === lang.code
+              ? "bg-primary text-white shadow-lg"
+              : "text-white/60 hover:bg-white/5 hover:text-white"
+          } `}
         >
           <span>{lang.flag}</span>
           <span>{lang.label}</span>
@@ -43,4 +40,3 @@ export function LanguageSwitcher() {
     </motion.div>
   );
 }
-

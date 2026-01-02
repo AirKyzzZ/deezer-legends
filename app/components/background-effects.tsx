@@ -8,16 +8,15 @@ import { motion } from "framer-motion";
  */
 export function BackgroundEffects() {
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       {/* Base gradient */}
       <div className="absolute inset-0 bg-black" />
 
       {/* Primary glow orb */}
       <motion.div
-        className="absolute w-[800px] h-[800px] rounded-full"
+        className="absolute h-[800px] w-[800px] rounded-full"
         style={{
-          background:
-            "radial-gradient(circle, rgba(162, 54, 255, 0.15) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(162, 54, 255, 0.15) 0%, transparent 70%)",
           left: "20%",
           top: "10%",
         }}
@@ -35,10 +34,9 @@ export function BackgroundEffects() {
 
       {/* Secondary glow orb */}
       <motion.div
-        className="absolute w-[600px] h-[600px] rounded-full"
+        className="absolute h-[600px] w-[600px] rounded-full"
         style={{
-          background:
-            "radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%)",
           right: "10%",
           bottom: "20%",
         }}
@@ -56,10 +54,9 @@ export function BackgroundEffects() {
 
       {/* Accent orb */}
       <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full"
+        className="absolute h-[400px] w-[400px] rounded-full"
         style={{
-          background:
-            "radial-gradient(circle, rgba(72, 219, 251, 0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(72, 219, 251, 0.08) 0%, transparent 70%)",
           left: "60%",
           top: "40%",
         }}
@@ -90,14 +87,13 @@ export function BackgroundEffects() {
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)",
+          background: "radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)",
         }}
       />
 
       {/* Top fade for header space */}
       <div
-        className="absolute top-0 left-0 right-0 h-32"
+        className="absolute top-0 right-0 left-0 h-32"
         style={{
           background: "linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%)",
         }}
@@ -105,4 +101,3 @@ export function BackgroundEffects() {
     </div>
   );
 }
-

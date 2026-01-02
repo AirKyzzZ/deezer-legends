@@ -10,10 +10,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 
   if (!id || isNaN(Number(id))) {
-    return NextResponse.json(
-      { error: "Valid album ID is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Valid album ID is required" }, { status: 400 });
   }
 
   try {
@@ -44,10 +41,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("Error fetching album:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch album" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch album" }, { status: 500 });
   }
 }
-

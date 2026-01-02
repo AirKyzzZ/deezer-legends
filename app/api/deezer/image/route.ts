@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
   const imageUrl = searchParams.get("url");
 
   if (!imageUrl) {
-    return NextResponse.json(
-      { error: "Image URL is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
   }
 
   try {
@@ -26,10 +23,7 @@ export async function GET(request: NextRequest) {
     ];
 
     if (!allowedHosts.some((host) => url.hostname.includes(host))) {
-      return NextResponse.json(
-        { error: "Invalid image source" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Invalid image source" }, { status: 403 });
     }
 
     const response = await fetch(imageUrl, {
@@ -54,10 +48,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error proxying image:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch image" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch image" }, { status: 500 });
   }
 }
-

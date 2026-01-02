@@ -59,7 +59,8 @@ export const metadata: Metadata = {
     alternateLocale: "en_US",
     url: "https://deezer-legends.vercel.app",
     title: "Deezer Legends - Générez Votre Carte Légende Musicale",
-    description: "Transformez votre profil Deezer en une carte à collectionner holographique légendaire. Visualisez vos statistiques musicales comme jamais auparavant !",
+    description:
+      "Transformez votre profil Deezer en une carte à collectionner holographique légendaire. Visualisez vos statistiques musicales comme jamais auparavant !",
     siteName: "Deezer Legends",
     images: [
       {
@@ -73,7 +74,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Deezer Legends - Votre Musique, Votre Carte",
-    description: "Générez votre carte musicale holographique unique basée sur vos statistiques Deezer.",
+    description:
+      "Générez votre carte musicale holographique unique basée sur vos statistiques Deezer.",
     creator: "@maximemansiet",
     images: ["/og-image.png"],
   },

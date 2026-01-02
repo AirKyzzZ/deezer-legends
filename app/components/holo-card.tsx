@@ -2,18 +2,7 @@
 
 import { useRef, useState, useCallback, forwardRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  Sparkles,
-  Guitar,
-  Mic,
-  Zap,
-  Piano,
-  Music,
-  Skull,
-  Heart,
-  Leaf,
-  Disc3,
-} from "lucide-react";
+import { Sparkles, Guitar, Mic, Zap, Piano, Music, Skull, Heart, Leaf, Disc3 } from "lucide-react";
 import Image from "next/image";
 import type { LegendCardData, GenreType, Attack } from "@/app/types/deezer";
 import { useLanguage } from "@/app/context/language-context";
@@ -41,23 +30,20 @@ function useTilt() {
     shineY: 50,
   });
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
 
-      const rotateX = ((y - centerY) / centerY) * -12;
-      const rotateY = ((x - centerX) / centerX) * 12;
-      const shineX = (x / rect.width) * 100;
-      const shineY = (y / rect.height) * 100;
+    const rotateX = ((y - centerY) / centerY) * -12;
+    const rotateY = ((x - centerX) / centerX) * 12;
+    const shineX = (x / rect.width) * 100;
+    const shineY = (y / rect.height) * 100;
 
-      setTransform({ rotateX, rotateY, shineX, shineY });
-    },
-    []
-  );
+    setTransform({ rotateX, rotateY, shineX, shineY });
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     setTransform({ rotateX: 0, rotateY: 0, shineX: 50, shineY: 50 });
@@ -156,81 +142,80 @@ function getRarityStyles(rarity: string): { bg: string; text: string } {
 /**
  * HoloCard Component - Pokemon/TCG Style with real genre names
  */
-export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
-  function HoloCard({ data }, ref) {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const { transform, handleMouseMove, handleMouseLeave } = useTilt();
-    const { user, tcg } = data;
-    const { t, language } = useLanguage();
+export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(function HoloCard({ data }, ref) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { transform, handleMouseMove, handleMouseLeave } = useTilt();
+  const { user, tcg } = data;
+  const { t, language } = useLanguage();
 
-    const proxiedImageUrl = useMemo(
-      () => getProxiedImageUrl(user.picture_xl || user.picture_big),
-      [user.picture_xl, user.picture_big]
-    );
+  const proxiedImageUrl = useMemo(
+    () => getProxiedImageUrl(user.picture_xl || user.picture_big),
+    [user.picture_xl, user.picture_big]
+  );
 
-    const genreGradient = getGenreGradient(tcg.element.genre);
-    const genreBorder = getGenreBorderColor(tcg.element.genre);
-    const rarityStyles = getRarityStyles(tcg.rarity);
+  const genreGradient = getGenreGradient(tcg.element.genre);
+  const genreBorder = getGenreBorderColor(tcg.element.genre);
+  const rarityStyles = getRarityStyles(tcg.rarity);
 
-    // Get localized rarity
-    const localizedRarity = useMemo(() => {
-      const rarityMap: Record<string, keyof typeof t> = {
-        LEGENDARY: "legendary",
-        "ULTRA RARE": "ultraRare",
-        RARE: "rare",
-        UNCOMMON: "uncommon",
-        COMMON: "common",
-      };
-      const key = rarityMap[tcg.rarity];
-      return key ? (t[key] as string) : tcg.rarity;
-    }, [tcg.rarity, t]);
+  // Get localized rarity
+  const localizedRarity = useMemo(() => {
+    const rarityMap: Record<string, keyof typeof t> = {
+      LEGENDARY: "legendary",
+      "ULTRA RARE": "ultraRare",
+      RARE: "rare",
+      UNCOMMON: "uncommon",
+      COMMON: "common",
+    };
+    const key = rarityMap[tcg.rarity];
+    return key ? (t[key] as string) : tcg.rarity;
+  }, [tcg.rarity, t]);
 
-    // Get localized flavor text
-    const flavorText = useMemo(() => {
-      const texts = t.flavorTexts as Record<string, string>;
-      return texts[tcg.genre] || texts.default;
-    }, [tcg.genre, t.flavorTexts]);
+  // Get localized flavor text
+  const flavorText = useMemo(() => {
+    const texts = t.flavorTexts as Record<string, string>;
+    return texts[tcg.genre] || texts.default;
+  }, [tcg.genre, t.flavorTexts]);
 
-    return (
-      <motion.div
-        ref={ref}
-        className="relative"
-        initial={{ opacity: 0, scale: 0.8, y: 50 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+  return (
+    <motion.div
+      ref={ref}
+      className="relative"
+      initial={{ opacity: 0, scale: 0.8, y: 50 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div
+        ref={cardRef}
+        className="relative aspect-[2.5/3.5] w-[320px] cursor-pointer md:w-[360px]"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          perspective: "1000px",
+          transformStyle: "preserve-3d",
+        }}
       >
+        {/* Card Container with 3D Transform */}
         <div
-          ref={cardRef}
-          className="relative w-[320px] md:w-[360px] aspect-[2.5/3.5] cursor-pointer"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          className={`relative h-full w-full overflow-hidden rounded-[1.5rem] border-4 transition-transform duration-200 ease-out ${genreBorder}`}
           style={{
-            perspective: "1000px",
+            transform: `rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg)`,
             transformStyle: "preserve-3d",
-          }}
-        >
-          {/* Card Container with 3D Transform */}
-          <div
-            className={`relative w-full h-full rounded-[1.5rem] overflow-hidden transition-transform duration-200 ease-out border-4 ${genreBorder}`}
-            style={{
-              transform: `rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg)`,
-              transformStyle: "preserve-3d",
-              boxShadow: `
+            boxShadow: `
                 0 25px 50px -12px rgba(0, 0, 0, 0.8),
                 0 0 60px -15px ${tcg.element.color}40,
                 ${transform.rotateY * 2}px ${transform.rotateX * -2}px 30px rgba(0, 0, 0, 0.3)
               `,
-            }}
-          >
-            {/* Card Background with Genre Gradient */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${genreGradient}`} />
-            <div className="absolute inset-0 bg-[#0a0a12]/90" />
+          }}
+        >
+          {/* Card Background with Genre Gradient */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${genreGradient}`} />
+          <div className="absolute inset-0 bg-[#0a0a12]/90" />
 
-            {/* Holographic Overlay */}
-            <div
-              className="absolute inset-0 opacity-40 mix-blend-overlay pointer-events-none z-20"
-              style={{
-                background: `
+          {/* Holographic Overlay */}
+          <div
+            className="pointer-events-none absolute inset-0 z-20 opacity-40 mix-blend-overlay"
+            style={{
+              background: `
                   linear-gradient(
                     ${45 + transform.rotateY * 3}deg,
                     transparent 0%,
@@ -240,14 +225,14 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                     transparent 100%
                   )
                 `,
-              }}
-            />
+            }}
+          />
 
-            {/* Shine Effect */}
-            <div
-              className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
-              style={{
-                background: `
+          {/* Shine Effect */}
+          <div
+            className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-300"
+            style={{
+              background: `
                   radial-gradient(
                     circle at ${transform.shineX}% ${transform.shineY}%,
                     rgba(255, 255, 255, 0.3) 0%,
@@ -255,145 +240,146 @@ export const HoloCard = forwardRef<HTMLDivElement, HoloCardProps>(
                     transparent 60%
                   )
                 `,
-                opacity: transform.rotateX !== 0 || transform.rotateY !== 0 ? 1 : 0,
-              }}
-            />
+              opacity: transform.rotateX !== 0 || transform.rotateY !== 0 ? 1 : 0,
+            }}
+          />
 
-            {/* Card Content */}
-            <div className="relative h-full flex flex-col p-4 z-10">
-              {/* === HEADER: Name + HP === */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <h2 className="text-lg md:text-xl font-extrabold text-white truncate">
-                    {user.name}
-                  </h2>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-xs text-white/60">{t.hp}</span>
-                  <span className="text-2xl font-black text-white">{tcg.hp}</span>
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center ml-1"
-                    style={{ backgroundColor: tcg.element.color }}
-                  >
-                    {getGenreIcon(tcg.element.icon, "w-4 h-4 text-white")}
-                  </div>
-                </div>
+          {/* Card Content */}
+          <div className="relative z-10 flex h-full flex-col p-4">
+            {/* === HEADER: Name + HP === */}
+            <div className="mb-2 flex items-center justify-between">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <h2 className="truncate text-lg font-extrabold text-white md:text-xl">
+                  {user.name}
+                </h2>
               </div>
-
-              {/* === IMAGE AREA === */}
-              <div className="relative mb-3">
-                {/* Image Frame */}
+              <div className="flex flex-shrink-0 items-center gap-1">
+                <span className="text-xs text-white/60">{t.hp}</span>
+                <span className="text-2xl font-black text-white">{tcg.hp}</span>
                 <div
-                  className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border-2"
-                  style={{ borderColor: `${tcg.element.color}60` }}
+                  className="ml-1 flex h-6 w-6 items-center justify-center rounded-full"
+                  style={{ backgroundColor: tcg.element.color }}
                 >
-                  <Image
-                    src={proxiedImageUrl}
-                    alt={user.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    priority
-                    crossOrigin="anonymous"
-                  />
-
-                  {/* Genre Type Badge */}
-                  <div
-                    className="absolute bottom-2 right-2 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold"
-                    style={{ backgroundColor: tcg.element.color, color: "#fff" }}
-                  >
-                    {getGenreIcon(tcg.element.icon, "w-3 h-3")}
-                    <span>{tcg.element.genre}</span>
-                  </div>
-
-                  {/* Rarity Badge */}
-                  <div
-                    className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${rarityStyles.bg} ${rarityStyles.text}`}
-                  >
-                    {localizedRarity}
-                  </div>
+                  {getGenreIcon(tcg.element.icon, "w-4 h-4 text-white")}
                 </div>
-
-                {/* Flavor Text below image */}
-                <p className="text-[10px] text-white/50 italic mt-1 text-center px-2 line-clamp-1">
-                  {flavorText}
-                </p>
-              </div>
-
-              {/* === ATTACKS LIST (Top Artists) === */}
-              <div className="flex-1 flex flex-col gap-2">
-                {tcg.attacks.map((attack, index) => (
-                  <AttackRow
-                    key={index}
-                    attack={attack}
-                    elementColor={tcg.element.color}
-                    elementIcon={tcg.element.icon}
-                  />
-                ))}
-              </div>
-
-              {/* === FOOTER: Weakness / Resistance / Retreat === */}
-              <div className="mt-3 pt-2 border-t border-white/10">
-                <div className="flex items-center justify-between text-[10px]">
-                  {/* Weakness */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">{t.weakness}</span>
-                    <GenreBadge genre={tcg.element.weakness} />
-                    <span className="text-red-400 font-bold">×2</span>
-                  </div>
-
-                  {/* Resistance */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">{t.resistance}</span>
-                    <GenreBadge genre={tcg.element.resistance} />
-                    <span className="text-green-400 font-bold">-20</span>
-                  </div>
-
-                  {/* Retreat Cost */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-white/40 uppercase tracking-wide">{t.retreat}</span>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: tcg.retreatCost }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center"
-                        >
-                          <Disc3 className="w-3 h-3 text-white/60" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Number / Set Info */}
-              <div className="mt-2 flex items-center justify-between text-[8px] text-white/30">
-                <span>{t.deezerLegends} • {user.country || "INTL"}</span>
-                <span>#{user.id.toString().slice(-4)}/9999</span>
               </div>
             </div>
 
-            {/* Card Border Inner Glow */}
-            <div
-              className="absolute inset-0 rounded-[1.3rem] pointer-events-none"
-              style={{
-                boxShadow: `inset 0 0 20px ${tcg.element.color}20`,
-              }}
-            />
-          </div>
-        </div>
+            {/* === IMAGE AREA === */}
+            <div className="relative mb-3">
+              {/* Image Frame */}
+              <div
+                className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border-2"
+                style={{ borderColor: `${tcg.element.color}60` }}
+              >
+                <Image
+                  src={proxiedImageUrl}
+                  alt={user.name}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  priority
+                  crossOrigin="anonymous"
+                />
 
-        {/* Shadow underneath */}
-        <div
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 blur-2xl opacity-50"
-          style={{
-            background: `radial-gradient(ellipse, ${tcg.element.color}40 0%, transparent 70%)`,
-          }}
-        />
-      </motion.div>
-    );
-  }
-);
+                {/* Genre Type Badge */}
+                <div
+                  className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold"
+                  style={{ backgroundColor: tcg.element.color, color: "#fff" }}
+                >
+                  {getGenreIcon(tcg.element.icon, "w-3 h-3")}
+                  <span>{tcg.element.genre}</span>
+                </div>
+
+                {/* Rarity Badge */}
+                <div
+                  className={`absolute top-2 left-2 rounded px-2 py-0.5 text-[10px] font-bold ${rarityStyles.bg} ${rarityStyles.text}`}
+                >
+                  {localizedRarity}
+                </div>
+              </div>
+
+              {/* Flavor Text below image */}
+              <p className="mt-1 line-clamp-1 px-2 text-center text-[10px] text-white/50 italic">
+                {flavorText}
+              </p>
+            </div>
+
+            {/* === ATTACKS LIST (Top Artists) === */}
+            <div className="flex flex-1 flex-col gap-2">
+              {tcg.attacks.map((attack, index) => (
+                <AttackRow
+                  key={index}
+                  attack={attack}
+                  elementColor={tcg.element.color}
+                  elementIcon={tcg.element.icon}
+                />
+              ))}
+            </div>
+
+            {/* === FOOTER: Weakness / Resistance / Retreat === */}
+            <div className="mt-3 border-t border-white/10 pt-2">
+              <div className="flex items-center justify-between text-[10px]">
+                {/* Weakness */}
+                <div className="flex items-center gap-1">
+                  <span className="tracking-wide text-white/40 uppercase">{t.weakness}</span>
+                  <GenreBadge genre={tcg.element.weakness} />
+                  <span className="font-bold text-red-400">×2</span>
+                </div>
+
+                {/* Resistance */}
+                <div className="flex items-center gap-1">
+                  <span className="tracking-wide text-white/40 uppercase">{t.resistance}</span>
+                  <GenreBadge genre={tcg.element.resistance} />
+                  <span className="font-bold text-green-400">-20</span>
+                </div>
+
+                {/* Retreat Cost */}
+                <div className="flex items-center gap-1">
+                  <span className="tracking-wide text-white/40 uppercase">{t.retreat}</span>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: tcg.retreatCost }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex h-4 w-4 items-center justify-center rounded-full bg-white/20"
+                      >
+                        <Disc3 className="h-3 w-3 text-white/60" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Number / Set Info */}
+            <div className="mt-2 flex items-center justify-between text-[8px] text-white/30">
+              <span>
+                {t.deezerLegends} • {user.country || "INTL"}
+              </span>
+              <span>#{user.id.toString().slice(-4)}/9999</span>
+            </div>
+          </div>
+
+          {/* Card Border Inner Glow */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-[1.3rem]"
+            style={{
+              boxShadow: `inset 0 0 20px ${tcg.element.color}20`,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Shadow underneath */}
+      <div
+        className="absolute -bottom-4 left-1/2 h-8 w-3/4 -translate-x-1/2 opacity-50 blur-2xl"
+        style={{
+          background: `radial-gradient(ellipse, ${tcg.element.color}40 0%, transparent 70%)`,
+        }}
+      />
+    </motion.div>
+  );
+});
 
 /**
  * Attack Row Component (Now shows Artist names)
@@ -408,13 +394,13 @@ function AttackRow({
   elementIcon: string;
 }) {
   return (
-    <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2 transition-colors hover:bg-white/10">
       {/* Energy Cost */}
-      <div className="flex gap-0.5 flex-shrink-0">
+      <div className="flex flex-shrink-0 gap-0.5">
         {Array.from({ length: attack.energyCost }).map((_, i) => (
           <div
             key={i}
-            className="w-5 h-5 rounded-full flex items-center justify-center"
+            className="flex h-5 w-5 items-center justify-center rounded-full"
             style={{ backgroundColor: elementColor }}
           >
             {getGenreIcon(elementIcon, "w-3 h-3 text-white")}
@@ -423,10 +409,10 @@ function AttackRow({
       </div>
 
       {/* Artist Name & Track */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-white truncate">{attack.name}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-white">{attack.name}</p>
         {attack.description && (
-          <p className="text-[10px] text-white/50 truncate">{attack.description}</p>
+          <p className="truncate text-[10px] text-white/50">{attack.description}</p>
         )}
       </div>
 
@@ -475,7 +461,7 @@ function GenreBadge({ genre }: { genre: GenreType }) {
 
   return (
     <div
-      className="w-5 h-5 rounded-full flex items-center justify-center"
+      className="flex h-5 w-5 items-center justify-center rounded-full"
       style={{ backgroundColor: color }}
       title={genre}
     >

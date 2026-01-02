@@ -14,22 +14,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const { playlistId } = await params;
 
   if (!playlistId || isNaN(Number(playlistId))) {
-    return NextResponse.json(
-      { error: "Valid playlist ID is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Valid playlist ID is required" }, { status: 400 });
   }
 
   try {
-    const response = await fetch(
-      `${DEEZER_API_BASE}/playlist/${playlistId}/tracks?limit=5`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-        next: { revalidate: 300 },
-      }
-    );
+    const response = await fetch(`${DEEZER_API_BASE}/playlist/${playlistId}/tracks?limit=5`, {
+      headers: {
+        Accept: "application/json",
+      },
+      next: { revalidate: 300 },
+    });
 
     if (!response.ok) {
       throw new Error(`Deezer API responded with ${response.status}`);
@@ -51,10 +45,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("Error fetching playlist tracks:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tracks" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch tracks" }, { status: 500 });
   }
 }
-

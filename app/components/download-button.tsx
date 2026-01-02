@@ -26,9 +26,7 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
 
     try {
       // Get the actual card element (the inner div with the styling)
-      const cardElement = cardRef.current.querySelector(
-        ".cursor-pointer"
-      ) as HTMLElement;
+      const cardElement = cardRef.current.querySelector(".cursor-pointer") as HTMLElement;
 
       if (!cardElement) {
         throw new Error("Card element not found");
@@ -88,28 +86,28 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
       case "loading":
         return (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" />
             <span>{t.generating}</span>
           </>
         );
       case "success":
         return (
           <>
-            <Check className="w-5 h-5" />
+            <Check className="h-5 w-5" />
             <span>{t.downloaded}</span>
           </>
         );
       case "error":
         return (
           <>
-            <Download className="w-5 h-5" />
+            <Download className="h-5 w-5" />
             <span>{t.tryAgain}</span>
           </>
         );
       default:
         return (
           <>
-            <Download className="w-5 h-5" />
+            <Download className="h-5 w-5" />
             <span>{t.downloadCard}</span>
           </>
         );
@@ -118,11 +116,7 @@ export function DownloadButton({ cardRef, userName }: DownloadButtonProps) {
 
   return (
     <motion.button
-      className={`
-        btn-primary flex items-center gap-2 min-w-[160px] justify-center
-        ${status === "success" ? "!bg-green-500 !shadow-[0_0_30px_rgba(34,197,94,0.4)]" : ""}
-        ${status === "error" ? "!bg-red-500 !shadow-[0_0_30px_rgba(239,68,68,0.4)]" : ""}
-      `}
+      className={`btn-primary flex min-w-[160px] items-center justify-center gap-2 ${status === "success" ? "!bg-green-500 !shadow-[0_0_30px_rgba(34,197,94,0.4)]" : ""} ${status === "error" ? "!bg-red-500 !shadow-[0_0_30px_rgba(239,68,68,0.4)]" : ""} `}
       onClick={handleDownload}
       disabled={status === "loading"}
       whileHover={{ scale: status === "idle" ? 1.05 : 1 }}
