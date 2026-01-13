@@ -31,24 +31,30 @@
 <td width="50%">
 
 ### 🃏 Holographic Trading Cards
+
 Generate stunning TCG-style cards with 3D holographic effects that respond to mouse movement
 
 ### 🎨 Genre-Based Theming
+
 Each card dynamically adapts its colors, icons, and style based on your most-listened music genre
 
 ### 📊 Music Stats Integration
+
 Displays your top artists, playlists count, and listening habits as attack moves and stats
 
 </td>
 <td width="50%">
 
 ### 🌍 Multi-Language Support
+
 Available in English and French with automatic browser detection
 
 ### 📱 Mobile Responsive
+
 Beautiful experience on all devices with touch-optimized interactions
 
 ### 📤 Share & Download
+
 Download your card as an image or share directly to social media
 
 </td>
@@ -86,16 +92,16 @@ Open [http://localhost:3000](http://localhost:3000) to see the app in action!
 
 <div align="center">
 
-| Category | Technologies |
-|----------|-------------|
-| **Framework** | Next.js 16.1 (App Router) |
-| **UI Library** | React 19 |
-| **Language** | TypeScript 5 |
-| **Styling** | Tailwind CSS 4 |
-| **Animations** | Framer Motion |
-| **Icons** | Lucide React |
-| **Image Export** | html-to-image |
-| **Deployment** | Vercel |
+| Category         | Technologies              |
+| ---------------- | ------------------------- |
+| **Framework**    | Next.js 16.1 (App Router) |
+| **UI Library**   | React 19                  |
+| **Language**     | TypeScript 5              |
+| **Styling**      | Tailwind CSS 4            |
+| **Animations**   | Framer Motion             |
+| **Icons**        | Lucide React              |
+| **Image Export** | html-to-image             |
+| **Deployment**   | Vercel                    |
 
 </div>
 
@@ -103,15 +109,15 @@ Open [http://localhost:3000](http://localhost:3000) to see the app in action!
 
 ## 📜 Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint for code quality |
-| `npm run type-check` | Run TypeScript compiler checks |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check code formatting |
+| Command                | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `npm run dev`          | Start development server with hot reload |
+| `npm run build`        | Build for production                     |
+| `npm run start`        | Start production server                  |
+| `npm run lint`         | Run ESLint for code quality              |
+| `npm run type-check`   | Run TypeScript compiler checks           |
+| `npm run format`       | Format code with Prettier                |
+| `npm run format:check` | Check code formatting                    |
 
 ---
 
@@ -119,13 +125,13 @@ Open [http://localhost:3000](http://localhost:3000) to see the app in action!
 
 Cards are assigned rarity based on your music engagement:
 
-| Rarity | HP Range | Description |
-|--------|----------|-------------|
-| ⭐ **LEGENDARY** | 200+ | Elite music lovers with exceptional stats |
-| 💎 **ULTRA RARE** | 150-199 | Dedicated listeners with impressive collections |
-| 🔮 **RARE** | 100-149 | Active music enthusiasts |
-| 🎵 **UNCOMMON** | 50-99 | Regular Deezer users |
-| 🎶 **COMMON** | 0-49 | New music explorers |
+| Rarity            | HP Range | Description                                     |
+| ----------------- | -------- | ----------------------------------------------- |
+| ⭐ **LEGENDARY**  | 200+     | Elite music lovers with exceptional stats       |
+| 💎 **ULTRA RARE** | 150-199  | Dedicated listeners with impressive collections |
+| 🔮 **RARE**       | 100-149  | Active music enthusiasts                        |
+| 🎵 **UNCOMMON**   | 50-99    | Regular Deezer users                            |
+| 🎶 **COMMON**     | 0-49     | New music explorers                             |
 
 ---
 
