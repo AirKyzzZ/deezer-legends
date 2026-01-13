@@ -51,6 +51,8 @@ export interface Translations {
   // Share
   shareTitle: string;
   shareText: string;
+  copyLink: string;
+  copied: string;
 
   // Flavor texts by genre
   flavorTexts: Record<string, string>;
@@ -104,6 +106,8 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareTitle: "Check out my Deezer Legend Card!",
     shareText: "I just created my music trading card on Deezer Legends! Create yours now:",
+    copyLink: "Copy Link",
+    copied: "Copied!",
 
     // Flavor texts
     flavorTexts: {
@@ -168,6 +172,8 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareTitle: "Découvrez ma Carte Deezer Legend !",
     shareText: "Je viens de créer ma carte musicale sur Deezer Legends ! Créez la vôtre :",
+    copyLink: "Copier le lien",
+    copied: "Copié !",
 
     // Flavor texts
     flavorTexts: {

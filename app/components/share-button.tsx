@@ -41,7 +41,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareTitle = t.shareTitle;
-  const shareText = "Découvrez ma carte Deezer Legends ! 🎵";
+  const shareText = t.shareText;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -252,7 +252,7 @@ export function ShareButton({ userName, cardRef }: ShareButtonProps) {
                     <Link2 className="text-primary h-4 w-4" />
                   )}
                 </div>
-                <span className="text-sm text-white">{copied ? "Copied!" : "Copy Link"}</span>
+                <span className="text-sm text-white">{copied ? t.copied : t.copyLink}</span>
               </button>
             </div>
           </motion.div>
