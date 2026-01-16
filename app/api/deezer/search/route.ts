@@ -15,8 +15,38 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // If query is numeric, try to fetch user directly by ID first
+    // This solves the issue where some users (like "Weeking") are not found in search results
+    // but are accessible via direct ID lookup.
+    if (/^\d+$/.test(query)) {
+      try {
+        const userResponse = await fetch(`${DEEZER_API_BASE}/user/${query}`, {
+          headers: { Accept: "application/json" },
+          next: { revalidate: 300 },
+        });
+
+        if (userResponse.ok) {
+          const user = await userResponse.json();
+          // Ensure it's a valid user and not an error object
+          if (user && user.id && !user.error) {
+            return NextResponse.json(
+              { data: [user], total: 1 },
+              {
+                headers: {
+                  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+                },
+              }
+            );
+          }
+        }
+      } catch (e) {
+        // Continue to normal search if direct fetch fails
+        console.warn("Direct user fetch failed, falling back to search", e);
+      }
+    }
+
     const response = await fetch(
-      `${DEEZER_API_BASE}/search/user?q=${encodeURIComponent(query)}&limit=10`,
+      `${DEEZER_API_BASE}/search/user?q=${encodeURIComponent(query)}&limit=25`,
       {
         headers: {
           Accept: "application/json",

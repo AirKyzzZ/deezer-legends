@@ -64,8 +64,8 @@ export const translations: Record<Language, Translations> = {
     discoverYourMusicLegend: "Discover Your Music Legend",
     title: "Deezer Legends",
     subtitle: "Search for any Deezer user and generate their unique holographic trading card",
-    searchPlaceholder: "Enter a Deezer username...",
-    searchHint: "Try searching for your PUBLIC Deezer name or username",
+    searchPlaceholder: "Enter a Deezer username or ID...",
+    searchHint: "Try searching for your PUBLIC Deezer name, pseudo, or User ID",
     viewCard: "View Card",
 
     // Card
@@ -130,8 +130,8 @@ export const translations: Record<Language, Translations> = {
     title: "Deezer Legends",
     subtitle:
       "Recherchez n'importe quel utilisateur Deezer et générez sa carte holographique unique",
-    searchPlaceholder: "Entrez un nom d'utilisateur Deezer...",
-    searchHint: "Essayez de rechercher votre nom ou pseudo Deezer PUBLIC",
+    searchPlaceholder: "Entrez un nom d'utilisateur ou ID Deezer...",
+    searchHint: "Essayez de rechercher votre nom, pseudo ou ID utilisateur Deezer",
     viewCard: "Voir la Carte",
 
     // Card
