@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   description:
     "Transformez n'importe quel profil Deezer en une superbe carte à collectionner holographique. Découvrez votre statut de légende musicale, visualisez vos artistes préférés sous forme d'attaques, et partagez-la avec le monde. Disponible en Français et Anglais.",
   applicationName: "Deezer Legends",
+  verification: {
+    google: "4QRu67RELS06oDzjPHno4lJpdTAgdOMnanaIDBy39Ao",
+  },
   authors: [{ name: "Maxime Mansiet", url: "https://www.linkedin.com/in/maximemansiet/" }],
   generator: "Next.js",
   keywords: [
